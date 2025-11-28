@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6ed0894b-4cec-4222-ab2c-9291fb430198" name="Changes" comment="feat projeto inicial fullstack (Java + React)" />
+    <list default="true" id="6ed0894b-4cec-4222-ab2c-9291fb430198" name="Changes" comment=".">
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,10 +27,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "dudisxqz"
-  }
+  "lastFilter": {}
 }]]></component>
   <component name="GitToolBoxStore">
     <option name="recentBranches">
@@ -102,6 +102,11 @@
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.41149426",
     "settings.editor.selected.configurable": "preferences.keymap"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "Markdown"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">
@@ -151,7 +156,7 @@
       <option name="presentableId" value="Default" />
       <updated>1764354935691</updated>
       <workItem from="1764354937111" duration="1884000" />
-      <workItem from="1764357027099" duration="4886000" />
+      <workItem from="1764357027099" duration="5294000" />
     </task>
     <task id="LOCAL-00001" summary="feat projeto inicial fullstack (Java + React)">
       <option name="closed" value="true" />
@@ -161,15 +166,35 @@
       <option name="project" value="LOCAL" />
       <updated>1764361901498</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary=".">
+      <option name="closed" value="true" />
+      <created>1764362097446</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1764362097446</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat projeto inicial fullstack (Java + React)" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat projeto inicial fullstack (Java + React)" />
+    <MESSAGE value="." />
+    <option name="LAST_COMMIT_MESSAGE" value="." />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
