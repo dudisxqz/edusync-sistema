@@ -1,5 +1,7 @@
 package com.seopro.api.infra.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -7,8 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.json.JSONObject;
-import org.json.JSONArray;
 
 @Service
 public class IAService {
@@ -18,8 +18,11 @@ public class IAService {
 
     private final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
-    public String melhorarTexto(String textoOriginal) {
-        if (textoOriginal == null || textoOriginal.isBlank()) return "";
+
+    public String gerarResposta(String promptDoSistema, String dadosDoUsuario) {
+        if (dadosDoUsuario == null || dadosDoUsuario.isBlank()) {
+            return "Não há dados suficientes para gerar uma resposta.";
+        }
 
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -28,33 +31,44 @@ public class IAService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + apiKey);
 
-
-            String prompt = "Reescreva a seguinte ocorrência escolar de forma formal, pedagógica e objetiva para um relatório oficial: " + textoOriginal;
+            String dadosSeguros = dadosDoUsuario.replace("\n", " ").replace("\"", "'");
+            String promptSeguro = promptDoSistema.replace("\n", " ").replace("\"", "'");
 
             String requestBody = """
                 {
                     "model": "gpt-3.5-turbo",
                     "messages": [
-                        {"role": "user", "content": "%s"}
+                        {
+                            "role": "system",
+                            "content": "%s"
+                        },
+                        {
+                            "role": "user",
+                            "content": "%s"
+                        }
                     ],
                     "temperature": 0.7
                 }
-                """.formatted(prompt.replace("\n", " ").replace("\"", "'"));
-
+                """.formatted(promptSeguro, dadosSeguros);
 
             HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
 
+
             ResponseEntity<String> response = restTemplate.postForEntity(OPENAI_URL, entity, String.class);
 
-            JSONObject jsonResponse = new JSONObject(response.getBody());
-            JSONArray choices = jsonResponse.getJSONArray("choices");
-            String textoGerado = choices.getJSONObject(0).getJSONObject("message").getString("content");
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.getBody());
 
-            return textoGerado;
+            return root.path("choices").get(0).path("message").path("content").asText();
 
         } catch (Exception e) {
             e.printStackTrace();
-            return "Erro ao consultar IA: " + e.getMessage();
+            return "⚠️ Erro ao processar IA. Verifique a chave de API ou a conexão. Detalhe: " + e.getMessage();
         }
+    }
+
+    public String melhorarTexto(String textoOriginal) {
+        String prompt = "Reescreva a seguinte ocorrência escolar de forma formal, pedagógica e objetiva para um relatório oficial.";
+        return gerarResposta(prompt, textoOriginal);
     }
 }

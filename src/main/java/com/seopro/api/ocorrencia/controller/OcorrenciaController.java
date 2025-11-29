@@ -22,15 +22,14 @@ public class OcorrenciaController {
     }
 
     @PostMapping
-    // Adicionei o @Valid aqui antes do @RequestBody
     public Ocorrencia criar(@RequestBody @Valid OcorrenciaDTO dados) {
         return service.criar(dados);
     }
 
     @Autowired
-    private com.seopro.api.infra.service.IAService iaService; // Injeção
+    private com.seopro.api.infra.service.IAService iaService;
 
-    @PostMapping("/ia/melhorar-texto") // Endpoint
+    @PostMapping("/ia/melhorar-texto")
     public String usarIA(@RequestBody String texto) {
         return iaService.melhorarTexto(texto);
     }

@@ -23,7 +23,7 @@ function NovaOcorrencia() {
         setTurmaDisplay(aluno ? aluno.turma : '');
     }
 
-    // Função que chama a IA no Java
+
     async function handleMelhorarTexto() {
         if (!descricao) {
             alert('⚠️ Escreva algo na descrição primeiro para a IA melhorar!');
@@ -31,16 +31,16 @@ function NovaOcorrencia() {
         }
 
         try {
-            setCarregandoIA(true); // Ativa o loading
+            setCarregandoIA(true);
             const resp = await api.post('/ocorrencias/ia/melhorar-texto', descricao, {
                 headers: { 'Content-Type': 'text/plain' }
             });
-            setDescricao(resp.data); // Atualiza o texto mágico
+            setDescricao(resp.data);
         } catch (erro) {
             console.error(erro);
             alert('❌ Erro ao consultar a IA. Verifique se o Backend está rodando.');
         } finally {
-            setCarregandoIA(false); // Desativa o loading
+            setCarregandoIA(false);
         }
     }
 
@@ -100,7 +100,6 @@ function NovaOcorrencia() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                             <label style={{...styles.label, marginBottom: 0}}>Descrição Detalhada</label>
 
-                            {/* BOTÃO DA IA AQUI 👇 */}
                             <button
                                 type="button"
                                 onClick={handleMelhorarTexto}
