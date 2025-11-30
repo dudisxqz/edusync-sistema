@@ -1,29 +1,45 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
+import { useReactToPrint } from 'react-to-print';
 import { Boletim } from '../components/Boletim';
 
 function VisualizarBoletim() {
     const { alunoId } = useParams();
     const [aluno, setAluno] = useState(null);
     const [notas, setNotas] = useState([]);
+    const [frequencias, setFrequencias] = useState([]); // NOVO ESTADO
     const [relatorioIA, setRelatorioIA] = useState('');
     const [loadingIA, setLoadingIA] = useState(false);
 
     const componentRef = useRef();
 
     useEffect(() => {
-        api.get('/alunos').then(res => {
-            const encontrado = res.data.find(a => a.id == alunoId);
-            setAluno(encontrado);
-        });
-        api.get('/notas').then(res => setNotas(res.data));
+        async function carregarDados() {
+            if (alunoId) {
+                try {
+                    // 1. Busca Aluno
+                    const resAlunos = await api.get('/alunos');
+                    const encontrado = resAlunos.data.find(a => a.id === Number(alunoId));
+                    setAluno(encontrado);
+
+                    // 2. Busca Notas
+                    const resNotas = await api.get('/notas');
+                    setNotas(resNotas.data);
+
+                    // 3. Busca Frequências (NOVO)
+                    const resFreq = await api.get(`/frequencias/aluno/${alunoId}`);
+                    setFrequencias(resFreq.data || []);
+                } catch (error) {
+                    console.error("Erro ao carregar dados:", error);
+                }
+            }
+        }
+        carregarDados();
     }, [alunoId]);
 
     const handlePrint = () => {
-        setTimeout(() => {
-            window.print();
-        }, 20);
+        window.print();
     };
 
     async function gerarParecer() {
@@ -38,89 +54,87 @@ function VisualizarBoletim() {
         }
     }
 
-    if (!aluno) return <div style={{padding:'20px'}}>Carregando boletim...</div>;
+    if (!aluno) return <div className="min-h-screen bg-gray-800 flex items-center justify-center text-white">Carregando documento...</div>;
 
     return (
-        <div style={{ background: '#525659', minHeight: '100vh', padding: '20px', fontFamily: "'Segoe UI', sans-serif" }}>
+        <div className="min-h-screen bg-gray-700 flex flex-col font-sans">
 
+            {/* CSS DE IMPRESSÃO BLINDADO */}
             <style>{`
         @media print {
-          /* FORÇA O ESCONDIMENTO DA BARRA DE COMANDOS */
-          .no-print { 
-            display: none !important; 
-            visibility: hidden !important;
+          /* Esconde tudo */
+          body * {
+            visibility: hidden;
           }
           
-          /* Garante que o documento comece no topo da página */
+          /* Mostra apenas a área do boletim e seus filhos */
+          #area-do-boletim, #area-do-boletim * {
+            visibility: visible !important;
+          }
+
+          /* Posiciona o boletim no topo absoluto da folha */
           #area-do-boletim {
-            position: fixed !important;
-            top: 0 !important; 
-            left: 0 !important; 
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
             width: 100% !important;
             height: auto !important;
-            margin: 0 !important; 
+            margin: 0 !important;
             padding: 0 !important;
+            background: white !important;
+            
+            /* Ajuste de escala para caber na folha A4 */
+            transform: scale(0.95);
+            transform-origin: top left;
           }
-          body * { visibility: hidden; }
-          #area-do-boletim, #area-do-boletim * { visibility: visible; }
+
+          /* Remove margens do navegador */
           @page { margin: 0; size: auto; }
         }
       `}</style>
 
-            <div style={styles.toolbar} className="no-print">
-                <div style={{color: 'white', fontWeight: 'bold'}}>
-                    📄 Visualizando Boletim: {aluno.nome}
+            {/* TOOLBAR */}
+            <div className="bg-gray-900 text-white shadow-md p-4 flex flex-col md:flex-row justify-between items-center gap-4 no-print sticky top-0 z-50">
+                <div className="flex items-center gap-3">
+                    <div className="bg-white text-gray-900 p-2 rounded">📄</div>
+                    <div>
+                        <h1 className="font-bold text-lg">{aluno.nome}</h1>
+                        <p className="text-xs text-gray-400">Visualização de Boletim Oficial</p>
+                    </div>
                 </div>
-                <div style={{display: 'flex', gap: '10px'}}>
+
+                <div className="flex gap-3">
                     <Link to="/">
-                        <button style={styles.btnVoltar}>Voltar</button>
+                        <button className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm font-bold transition">Voltar</button>
                     </Link>
 
                     <button
                         onClick={gerarParecer}
                         disabled={loadingIA || relatorioIA}
-                        style={{...styles.btnIA, opacity: relatorioIA ? 0.5 : 1}}
+                        className={`px-4 py-2 rounded text-sm font-bold transition flex items-center gap-2 ${loadingIA || relatorioIA ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 text-white'}`}
                     >
-                        {loadingIA ? '🤖 Gerando...' : relatorioIA ? '✅ IA OK' : '✨ Gerar Parecer IA'}
+                        {loadingIA ? '🤖 Analisando...' : relatorioIA ? '✅ IA Gerada' : '✨ Gerar Parecer IA'}
                     </button>
 
-                    <button onClick={handlePrint} style={styles.btnPrint}>
-                        🖨️ Imprimir / Baixar PDF
+                    <button onClick={handlePrint} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-bold transition flex items-center gap-2">
+                        🖨️ Imprimir
                     </button>
                 </div>
             </div>
 
-            <div style={styles.paperContainer}>
-                <div id="area-do-boletim" style={styles.paper} ref={componentRef}>
+            {/* PREVIEW */}
+            <div className="flex-1 overflow-auto p-8 flex justify-center bg-gray-600">
+                <div id="area-do-boletim" className="bg-white shadow-2xl" style={{ width: '210mm', minHeight: '297mm' }} ref={componentRef}>
                     <Boletim
                         aluno={aluno}
                         notas={notas}
+                        frequencias={frequencias} // Passamos as frequências aqui!
                         relatorioIA={relatorioIA}
                     />
                 </div>
             </div>
-
         </div>
     );
 }
-
-const styles = {
-    toolbar: {
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginBottom: '20px', background: '#333', padding: '15px 20px', borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
-    },
-    paperContainer: { display: 'flex', justifyContent: 'center' },
-    paper: {
-        background: 'white',
-        boxShadow: '0 0 20px rgba(0,0,0,0.5)',
-        width: '210mm',
-        minHeight: '297mm',
-        padding: '0'
-    },
-    btnVoltar: { padding: '10px 20px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' },
-    btnIA: { padding: '10px 20px', background: 'linear-gradient(45deg, #FF512F, #DD2476)', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' },
-    btnPrint: { padding: '10px 20px', background: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }
-};
 
 export default VisualizarBoletim;

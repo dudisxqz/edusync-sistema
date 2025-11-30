@@ -1,20 +1,30 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+// Importando ícones
+import { Eye, EyeOff, User, Lock, Loader2 } from 'lucide-react';
 
 function Login() {
     const { signIn, signed } = useContext(AuthContext);
 
     const [login, setLogin] = useState('');
     const [senha, setSenha] = useState('');
+
     const [erro, setErro] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [mostrarSenha, setMostrarSenha] = useState(false);
 
     async function handleLogin(e) {
         e.preventDefault();
+        setLoading(true);
+        setErro('');
         try {
             await signIn(login, senha);
+            // eslint-disable-next-line no-unused-vars
         } catch (error) {
             setErro("Login ou senha inválidos.");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -23,55 +33,81 @@ function Login() {
     }
 
     return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                <h1 style={styles.title}>SEOP</h1>
-                <p style={styles.subtitle}>Sistema Escolar de Ocorrências e Pedagogia</p>
-
-                <form onSubmit={handleLogin} style={{ marginTop: '30px' }}>
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={styles.label}>Usuário</label>
-                        <input
-                            type="text"
-                            value={login}
-                            onChange={e => setLogin(e.target.value)}
-                            style={styles.input}
-                            placeholder="Ex: diretor"
-                        />
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 font-sans">
+            <div className="max-w-md w-full bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200">
+                <div className="px-8 py-10">
+                    <div className="text-center mb-8">
+                        <h1 className="text-4xl font-extrabold text-primary-dark tracking-tight flex justify-center items-center gap-2">
+                            EduSync
+                        </h1>
+                        <p className="text-sm text-gray-500 mt-2 font-medium">Portal de Gestão Escolar Inteligente</p>
                     </div>
 
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={styles.label}>Senha</label>
-                        <input
-                            type="password"
-                            value={senha}
-                            onChange={e => setSenha(e.target.value)}
-                            style={styles.input}
-                            placeholder="••••••"
-                        />
-                    </div>
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Usuário</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <User size={18} />
+                                </div>
+                                <input
+                                    type="text"
+                                    value={login}
+                                    onChange={e => setLogin(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-primary-dark focus:ring-2 focus:ring-primary-dark focus:ring-opacity-50 outline-none transition duration-200"
+                                    placeholder="Digite seu usuário"
+                                    disabled={loading}
+                                />
+                            </div>
+                        </div>
 
-                    {erro && <p style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>{erro}</p>}
+                        <div>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-semibold text-gray-700">Senha</label>
+                            </div>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <Lock size={18} />
+                                </div>
+                                <input
+                                    type={mostrarSenha ? "text" : "password"}
+                                    value={senha}
+                                    onChange={e => setSenha(e.target.value)}
+                                    className="w-full pl-10 pr-12 py-3 rounded-lg border border-gray-300 focus:border-primary-dark focus:ring-2 focus:ring-primary-dark focus:ring-opacity-50 outline-none transition duration-200"
+                                    placeholder="••••••"
+                                    disabled={loading}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setMostrarSenha(!mostrarSenha)}
+                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none transition"
+                                >
+                                    {mostrarSenha ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
+                        </div>
 
-                    <button type="submit" style={styles.button}>ENTRAR</button>
-                </form>
+                        {erro && (
+                            <div className="bg-red-50 border-l-4 border-error-red p-3 rounded flex items-center gap-2">
+                                <p className="text-xs text-error-red font-bold">{erro}</p>
+                            </div>
+                        )}
 
-                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '12px', color: '#888' }}>
-                    <p>Acesso restrito a funcionários e responsáveis.</p>
+                        <button
+                            type="submit"
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-primary-dark hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed items-center gap-2"
+                            disabled={loading}
+                        >
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : "ENTRAR"}
+                        </button>
+                    </form>
+                </div>
+                <div className="bg-gray-50 px-8 py-4 border-t border-gray-100 text-center">
+                    <p className="text-xs text-gray-500">Acesso restrito a funcionários e responsáveis autorizados.</p>
                 </div>
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #003366 0%, #0056b3 100%)' },
-    card: { background: 'white', padding: '40px', borderRadius: '10px', width: '100%', maxWidth: '350px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' },
-    title: { textAlign: 'center', color: '#003366', margin: 0, fontSize: '32px' },
-    subtitle: { textAlign: 'center', color: '#666', fontSize: '14px', marginBottom: '20px' },
-    label: { display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: 'bold', color: '#333' },
-    input: { width: '100%', padding: '12px', borderRadius: '5px', border: '1px solid #ddd', fontSize: '16px', boxSizing: 'border-box' },
-    button: { width: '100%', padding: '12px', background: '#003366', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }
-};
 
 export default Login;

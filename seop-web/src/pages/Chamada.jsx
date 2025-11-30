@@ -6,23 +6,20 @@ function Chamada() {
     const navigate = useNavigate();
     const [alunos, setAlunos] = useState([]);
     const [turmas, setTurmas] = useState([]);
-
     const [turmaSelecionada, setTurmaSelecionada] = useState('');
     const [dataChamada, setDataChamada] = useState(new Date().toISOString().split('T')[0]);
     const [presencas, setPresencas] = useState({});
 
     useEffect(() => {
-        async function carregarAlunos() {
+        async function carregar() {
             try {
                 const resp = await api.get('/alunos');
                 setAlunos(resp.data);
                 const listaTurmas = [...new Set(resp.data.map(a => a.turma))].sort();
                 setTurmas(listaTurmas);
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) { console.error(e); }
         }
-        carregarAlunos();
+        carregar();
     }, []);
 
     const alunosDaTurma = alunos.filter(a => a.turma === turmaSelecionada);
@@ -30,9 +27,8 @@ function Chamada() {
     useEffect(() => {
         if (alunosDaTurma.length > 0) {
             const inicial = {};
-            alunosDaTurma.forEach(a => {
-                inicial[a.id] = true;
-            });
+            alunosDaTurma.forEach(a => inicial[a.id] = true);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPresencas(inicial);
         }
     }, [turmaSelecionada]);
@@ -43,82 +39,89 @@ function Chamada() {
 
     async function handleSalvarChamada() {
         if (!turmaSelecionada) return alert("Selecione uma turma!");
-
-        const payload = alunosDaTurma.map(aluno => ({
-            alunoId: aluno.id,
-            data: dataChamada,
-            presente: presencas[aluno.id]
-        }));
-
+        const payload = alunosDaTurma.map(aluno => ({ alunoId: aluno.id, data: dataChamada, presente: presencas[aluno.id] }));
         try {
             await api.post('/frequencias/lote', payload);
             alert(`✅ Chamada registrada!`);
             navigate('/');
-        } catch (erro) {
-            console.error(erro);
-            alert("Erro ao salvar chamada.");
-        }
+            // eslint-disable-next-line no-unused-vars
+        } catch (erro) { alert("Erro ao salvar."); }
     }
 
     return (
-        <div style={{ background: '#f4f6f9', minHeight: '100vh', padding: '20px', fontFamily: "'Segoe UI', sans-serif" }}>
-            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h2 style={{ color: '#003366', margin: 0 }}>📅 Registro de Frequência</h2>
-                    <Link to="/"><button style={styles.btnVoltar}>Voltar</button></Link>
+        <div className="min-h-screen bg-gray-100 font-sans">
+            <nav className="bg-primary-dark text-white shadow-md">
+                <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <span className="text-2xl">📅</span>
+                        <h2 className="text-xl font-bold">Registro de Frequência</h2>
+                    </div>
+                    <Link to="/">
+                        <button className="px-4 py-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg text-sm font-bold transition">Voltar</button>
+                    </Link>
                 </div>
+            </nav>
 
-                <div style={styles.card}>
-                    <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #eee' }}>
-                        <div style={{ flex: 1 }}>
-                            <label style={styles.label}>Turma</label>
-                            <select value={turmaSelecionada} onChange={e => setTurmaSelecionada(e.target.value)} style={styles.select}>
-                                <option value="">-- Selecione --</option>
+            <div className="max-w-5xl mx-auto px-4 py-8">
+                <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <div className="flex flex-col md:flex-row gap-6 border-b border-gray-100 pb-6 mb-6">
+                        <div className="flex-1">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Turma</label>
+                            <select value={turmaSelecionada} onChange={e => setTurmaSelecionada(e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-dark bg-white">
+                                <option value="">-- Selecione a Turma --</option>
                                 {turmas.map(t => <option key={t} value={t}>{t}</option>)}
                             </select>
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <label style={styles.label}>Data</label>
-                            <input type="date" value={dataChamada} onChange={e => setDataChamada(e.target.value)} style={styles.input} />
+                        <div className="flex-1">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Data da Aula</label>
+                            <input type="date" value={dataChamada} onChange={e => setDataChamada(e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-dark" />
                         </div>
                     </div>
 
                     {turmaSelecionada ? (
-                        <>
-                            <div style={styles.listaContainer}>
+                        <div>
+                            <div className="flex justify-between items-center mb-4 px-2">
+                                <span className="text-sm font-bold text-gray-400 uppercase">Lista de Alunos ({alunosDaTurma.length})</span>
+                                <span className="text-xs text-gray-400">Clique na linha para alterar</span>
+                            </div>
+
+                            <div className="border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-100">
                                 {alunosDaTurma.map(aluno => (
-                                    <div key={aluno.id} onClick={() => togglePresenca(aluno.id)} style={{
-                                        ...styles.itemChamada,
-                                        background: presencas[aluno.id] ? 'white' : '#ffeef0',
-                                        borderLeft: presencas[aluno.id] ? '4px solid #28a745' : '4px solid #dc3545'
-                                    }}>
-                                        <div style={{ fontWeight: '500' }}>{aluno.nome}</div>
-                                        <div style={{ fontSize: '12px', fontWeight: 'bold', color: presencas[aluno.id] ? '#28a745' : '#dc3545' }}>
-                                            {presencas[aluno.id] ? 'PRESENTE' : 'AUSENTE'}
+                                    <div
+                                        key={aluno.id}
+                                        onClick={() => togglePresenca(aluno.id)}
+                                        className={`p-4 flex justify-between items-center cursor-pointer transition duration-150 border-l-4 ${presencas[aluno.id] ? 'bg-white border-l-secondary-green hover:bg-green-50' : 'bg-red-50 border-l-error-red hover:bg-red-100'}`}
+                                    >
+                                        <div className="font-semibold text-gray-800">{aluno.nome}</div>
+
+                                        <div className="flex items-center gap-3">
+                      <span className={`text-xs font-bold px-2 py-1 rounded ${presencas[aluno.id] ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
+                        {presencas[aluno.id] ? 'PRESENTE' : 'AUSENTE'}
+                      </span>
+                                            <div className={`w-6 h-6 rounded border flex items-center justify-center ${presencas[aluno.id] ? 'bg-green-500 border-green-600 text-white' : 'bg-white border-gray-300'}`}>
+                                                {presencas[aluno.id] && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                                <button onClick={handleSalvarChamada} style={styles.btnSalvar}>💾 Salvar Chamada</button>
+
+                            <div className="mt-6 flex justify-end">
+                                <button onClick={handleSalvarChamada} className="px-8 py-3 bg-primary-dark hover:bg-opacity-90 text-white font-bold rounded-lg shadow-lg transition transform hover:-translate-y-0.5">
+                                    💾 Salvar Chamada
+                                </button>
                             </div>
-                        </>
-                    ) : <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>Selecione uma turma.</div>}
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 text-gray-400">
+                            <p className="text-4xl mb-4">🏫</p>
+                            <p>Selecione uma turma acima para carregar a lista de alunos.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
 }
-
-const styles = {
-    card: { background: 'white', padding: '25px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' },
-    label: { display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' },
-    select: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' },
-    input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', boxSizing: 'border-box' },
-    btnVoltar: { padding: '8px 15px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' },
-    btnSalvar: { padding: '12px 30px', background: '#003366', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' },
-    listaContainer: { border: '1px solid #eee', borderRadius: '5px', maxHeight: '400px', overflowY: 'auto' },
-    itemChamada: { padding: '15px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }
-};
 
 export default Chamada;

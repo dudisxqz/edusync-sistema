@@ -2,41 +2,93 @@ import { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
+// Ícones
+import {
+    LayoutDashboard, Users, AlertTriangle, TrendingUp, Search, BookOpen,
+    PlusCircle, LogOut, CalendarDays, FileText, BarChart3, GraduationCap, FileWarning
+} from 'lucide-react';
+
+// --- CARD KPI ---
+const KPICard = ({ title, value, desc, color, icon: Icon }) => (
+    <div className={`bg-white p-5 rounded-xl shadow-sm border-l-4 border-${color}-500 transition hover:shadow-md flex justify-between items-start`}>
+        <div>
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{title}</div>
+            <div className={`text-2xl font-extrabold text-${color}-600`}>{value}</div>
+            <div className="text-xs text-gray-400 mt-1 font-medium">{desc}</div>
+        </div>
+        <div className={`p-2 bg-${color}-50 rounded-lg text-${color}-600`}>
+            <Icon size={20} />
+        </div>
+    </div>
+);
+
+// --- LINHA DO ALUNO ---
+const LinhaAluno = ({ aluno }) => (
+    <li className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition duration-150">
+        <div className="p-3">
+            {/* 1. Linha Superior: Ícone, Nome e Turma */}
+            <div className="flex items-start gap-3 mb-3">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-full shrink-0">
+                    <GraduationCap size={18} />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <div className="font-bold text-gray-800 text-sm truncate">{aluno.nome}</div>
+                    <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-2">
+                        <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-medium whitespace-nowrap">{aluno.turma}</span>
+                        <span className="text-gray-300">|</span>
+                        <span className="truncate">Mat: {aluno.matricula}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. Linha Inferior: Botões */}
+            <div className="flex gap-2 pl-11">
+                <Link to={`/boletim/aluno/${aluno.id}`} className="flex-1">
+                    <button className="w-full flex justify-center items-center px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1.5 uppercase tracking-wide">
+                        <FileText size={12} /> Boletim
+                    </button>
+                </Link>
+
+                <Link to={`/frequencia/aluno/${aluno.id}`} className="flex-1">
+                    <button className="w-full flex justify-center items-center px-2 py-1.5 bg-secondary-green hover:bg-green-700 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1.5 uppercase tracking-wide">
+                        <CalendarDays size={12} /> Frequência
+                    </button>
+                </Link>
+            </div>
+        </div>
+    </li>
+);
 
 function Dashboard() {
     const { user, signOut } = useContext(AuthContext);
-
     const [alunos, setAlunos] = useState([]);
     const [ocorrencias, setOcorrencias] = useState([]);
     const [notas, setNotas] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Estados de navegação (Apenas para Admin)
     const [abaAtiva, setAbaAtiva] = useState('pesquisa');
     const [busca, setBusca] = useState('');
     const [turmaAberta, setTurmaAberta] = useState(null);
 
     useEffect(() => {
+        async function carregarDados() {
+            try {
+                const [respAlunos, respOcorrencias, respNotas] = await Promise.all([
+                    api.get('/alunos'),
+                    api.get('/ocorrencias'),
+                    api.get('/notas')
+                ]);
+                setAlunos(respAlunos.data || []);
+                setOcorrencias(respOcorrencias.data || []);
+                setNotas(respNotas.data || []);
+            } catch (erro) {
+                console.error("Erro ao carregar dados:", erro);
+            } finally {
+                setLoading(false);
+            }
+        }
         carregarDados();
     }, []);
-
-    async function carregarDados() {
-        setLoading(true);
-        try {
-            const [respAlunos, respOcorrencias, respNotas] = await Promise.all([
-                api.get('/alunos'),
-                api.get('/ocorrencias'),
-                api.get('/notas')
-            ]);
-            setAlunos(respAlunos.data || []);
-            setOcorrencias(respOcorrencias.data || []);
-            setNotas(respNotas.data || []);
-        } catch (erro) {
-            console.error("Erro ao carregar dados:", erro);
-        } finally {
-            setLoading(false);
-        }
-    }
 
     const isAdmin = user?.role === 'ADMIN';
     const isParent = user?.role === 'RESPONSAVEL';
@@ -48,180 +100,218 @@ function Dashboard() {
         ? (notas.reduce((acc, n) => acc + (Number(n.valor) || 0), 0) / notas.length).toFixed(1)
         : "0.0";
 
-    const alunosFiltradosAdmin = alunos.filter(aluno =>
-        aluno.nome && aluno.nome.toLowerCase().includes(busca.toLowerCase())
+    // --- LÓGICA DE DADOS DOS ALUNOS ---
+    // Se for admin vê todos, se for pai vê apenas os "filhos" (simulados)
+    const alunosVisiveis = isAdmin
+        ? alunos
+        : alunos.filter(a => a.nome.includes("João Silva") || a.nome.includes("Maria Oliveira"));
+
+    const alunosFiltrados = alunosVisiveis.filter(aluno =>
+        aluno.nome.toLowerCase().includes(busca.toLowerCase())
     );
 
-    const turmasAgrupadas = alunos.reduce((grupo, aluno) => {
+    const turmasAgrupadas = alunosVisiveis.reduce((grupo, aluno) => {
         const turma = aluno.turma || "Sem Turma";
         if (!grupo[turma]) grupo[turma] = [];
         grupo[turma].push(aluno);
         return grupo;
     }, {});
+
     const listaDeTurmas = Object.keys(turmasAgrupadas).sort();
-
-    const meusFilhos = alunos.filter(a => a.nome.includes("João Silva") || a.nome.includes("Maria Oliveira"));
-
-    const LinhaAluno = ({ aluno }) => (
-        <li style={styles.itemLista}>
-            <div style={styles.itemAlunoContent}>
-                <div>
-                    <div style={{ fontWeight: '700', color: '#333', fontSize: '14px' }}>{aluno.nome}</div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                        <span style={{fontWeight:'bold'}}>Turma:</span> {aluno.turma} • <span style={{fontWeight:'bold'}}>Matrícula:</span> {aluno.matricula}
-                    </div>
-                </div>
-
-                <div style={{display: 'flex', gap: '8px'}}>
-                    <Link to={`/boletim/aluno/${aluno.id}`}>
-                        <button style={styles.btnBoletim}>📄 BOLETIM</button>
-                    </Link>
-                    <Link to={`/frequencia/aluno/${aluno.id}`}>
-                        <button style={styles.btnFrequencia}>📅 FREQUÊNCIA</button>
-                    </Link>
-                </div>
-            </div>
-        </li>
-    );
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f4f6f9', flexDirection: 'column' }}>
-                <div style={styles.spinner}></div>
-                <p style={{ color: '#666', marginTop: '10px' }}>Carregando EduSync...</p>
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-primary-dark"></div>
+                    <p className="text-gray-500 font-medium text-sm">Carregando...</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div style={{ background: '#f4f6f9', minHeight: '100vh', fontFamily: "'Segoe UI', sans-serif" }}>
+        <div className="min-h-screen bg-gray-100 font-sans">
 
-            <div style={styles.navbar}>
-                <div style={styles.containerNav}>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
-                        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>EduSync</h2>
+            <nav className="bg-primary-dark text-white shadow-lg sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <LayoutDashboard size={24} />
+                            <div className="text-lg font-bold tracking-wide">EduSync</div>
+                        </div>
                         {user && (
-                            <span style={{fontSize: '12px', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '15px', fontWeight: '500'}}>
-                  Olá, {user.login} <small>({user.role})</small>
-               </span>
+                            <div className="hidden md:flex items-center px-3 py-1 rounded-full bg-white/10 text-[10px] font-medium backdrop-blur-sm border border-white/20">
+                                <span className="opacity-75 mr-1">Olá,</span> {user.login}
+                            </div>
                         )}
                     </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
+
+                    <div className="flex items-center gap-2">
                         {isAdmin && (
-                            <>
-                                <Link to="/chamada"><button style={{...styles.btnPrimary, background: '#6610f2'}}>📅 Chamada</button></Link>
-                                <Link to="/desempenho"><button style={{...styles.btnPrimary, background: '#17a2b8'}}>📊 Notas</button></Link>
-                                <Link to="/nova-ocorrencia"><button style={{...styles.btnPrimary}}>+ Ocorrência</button></Link>
-                            </>
+                            <div className="hidden md:flex gap-2">
+                                <Link to="/chamada">
+                                    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 rounded text-xs font-bold transition shadow-sm">
+                                        <CalendarDays size={14} /> Chamada
+                                    </button>
+                                </Link>
+                                <Link to="/desempenho">
+                                    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-tertiary-info hover:bg-cyan-600 rounded text-xs font-bold transition shadow-sm">
+                                        <BarChart3 size={14} /> Notas
+                                    </button>
+                                </Link>
+                                <Link to="/nova-ocorrencia">
+                                    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded text-xs font-bold transition shadow-sm">
+                                        <PlusCircle size={14} /> Ocorrência
+                                    </button>
+                                </Link>
+                            </div>
                         )}
-                        <button onClick={signOut} style={{...styles.btnPrimary, background: '#dc3545', padding: '8px 12px'}}>Sair</button>
+                        <button onClick={signOut} className="flex items-center gap-1.5 px-3 py-1.5 bg-error-red hover:bg-red-600 rounded text-xs font-bold transition shadow-sm ml-1">
+                            <LogOut size={14} /> Sair
+                        </button>
                     </div>
                 </div>
-            </div>
+            </nav>
 
-            <div style={styles.containerBody}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-                {/* --- CARDS DE GESTÃO (APENAS PARA ADMIN) --- */}
                 {isAdmin && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-                        <div style={{...styles.kpiCard, borderLeft: '5px solid #0056b3'}}>
-                            <div style={styles.kpiTitle}>Total de Alunos</div>
-                            <div style={{...styles.kpiValue, color: '#0056b3'}}>{totalAlunos}</div>
-                            <div style={styles.kpiDesc}>Matriculados</div>
-                        </div>
-                        <div style={{...styles.kpiCard, borderLeft: '5px solid #dc3545'}}>
-                            <div style={styles.kpiTitle}>Ocorrências Hoje</div>
-                            <div style={{...styles.kpiValue, color: '#dc3545'}}>{ocorrenciasHoje}</div>
-                            <div style={styles.kpiDesc}>Registros disciplinares</div>
-                        </div>
-                        <div style={{...styles.kpiCard, borderLeft: '5px solid #28a745'}}>
-                            <div style={styles.kpiTitle}>Média Geral</div>
-                            <div style={{...styles.kpiValue, color: '#28a745'}}>{mediaGeral}</div>
-                            <div style={styles.kpiDesc}>Desempenho Acadêmico</div>
-                        </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                        <KPICard title="Total de Alunos" value={totalAlunos} desc="Matriculados" color="blue" icon={Users} />
+                        <KPICard title="Ocorrências Hoje" value={ocorrenciasHoje} desc="Registros disciplinares" color="red" icon={FileWarning} />
+                        <KPICard title="Média Geral" value={mediaGeral} desc="Desempenho Acadêmico" color="green" icon={TrendingUp} />
                     </div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: isAdmin ? '400px 1fr' : '1fr', gap: '24px' }}>
+                <div className={`grid gap-6 ${isAdmin ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 max-w-3xl mx-auto'}`}>
 
-                    <div style={styles.card}>
+                    {/* COLUNA LISTA DE ALUNOS */}
+                    <div className={`bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 ${isAdmin ? 'lg:col-span-1' : 'col-span-3 lg:col-span-2'}`}>
 
+                        {/* TÍTULO / ABAS */}
                         {isAdmin ? (
-                            <div style={styles.tabsContainer}>
-                                <button style={abaAtiva === 'pesquisa' ? styles.tabActive : styles.tabInactive} onClick={() => setAbaAtiva('pesquisa')}>🔍 Pesquisa</button>
-                                <button style={abaAtiva === 'turmas' ? styles.tabActive : styles.tabInactive} onClick={() => setAbaAtiva('turmas')}>📚 Turmas</button>
+                            <div className="flex border-b border-gray-100">
+                                <button
+                                    onClick={() => setAbaAtiva('pesquisa')}
+                                    className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-wide transition flex justify-center items-center gap-2 ${abaAtiva === 'pesquisa' ? 'text-primary-dark border-b-2 border-primary-dark bg-blue-50/50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    <Search size={14} /> Pesquisa
+                                </button>
+                                <button
+                                    onClick={() => setAbaAtiva('turmas')}
+                                    className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-wide transition flex justify-center items-center gap-2 ${abaAtiva === 'turmas' ? 'text-primary-dark border-b-2 border-primary-dark bg-blue-50/50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    <BookOpen size={14} /> Turmas
+                                </button>
                             </div>
                         ) : (
-                            <div style={{ padding: '15px', borderBottom: '1px solid #eee' }}>
-                                <h3 style={{ margin: 0, color: '#003366', fontSize: '16px' }}>👨‍👩‍👧‍👦 Meus Filhos (Estudantes Matriculados)</h3>
+                            <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center gap-3">
+                                <Users className="text-primary-dark" size={20} />
+                                <h3 className="text-base font-bold text-primary-dark">Estudantes Matriculados</h3>
                             </div>
                         )}
 
-                        {isAdmin && abaAtiva === 'pesquisa' && (
-                            <div style={{ padding: '15px' }}>
-                                <input type="text" placeholder="Digite o nome..." value={busca} onChange={(e) => setBusca(e.target.value)} style={styles.inputBusca} />
-                                <ul style={styles.list}>
-                                    {alunosFiltradosAdmin.length > 0 ? (
-                                        alunosFiltradosAdmin.map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} />)
-                                    ) : <li style={styles.emptyState}>Nenhum aluno encontrado.</li>}
-                                </ul>
-                            </div>
-                        )}
-
-                        {isAdmin && abaAtiva === 'turmas' && (
-                            <div style={{ padding: '0' }}>
-                                {listaDeTurmas.map(turma => (
-                                    <div key={turma}>
-                                        <div onClick={() => setTurmaAberta(turmaAberta === turma ? null : turma)} style={{...styles.turmaHeader, background: turmaAberta === turma ? '#e9ecef' : 'white'}}>
-                                            <span style={{fontWeight:'bold', color: '#003366'}}>{turma}</span>
-                                            <span style={{fontSize: '12px', color: '#666'}}>{turmasAgrupadas[turma].length} alunos {turmaAberta === turma ? '▲' : '▼'}</span>
-                                        </div>
-                                        {turmaAberta === turma && (
-                                            <ul style={{...styles.list, background: '#f8f9fa', borderBottom: '1px solid #ddd'}}>
-                                                {turmasAgrupadas[turma].map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} />)}
-                                            </ul>
-                                        )}
+                        <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
+                            {/* PESQUISA (ADMIN) */}
+                            {isAdmin && abaAtiva === 'pesquisa' && (
+                                <div className="p-3">
+                                    <div className="relative mb-2">
+                                        <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar aluno..."
+                                            value={busca}
+                                            onChange={(e) => setBusca(e.target.value)}
+                                            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-md text-sm focus:ring-1 focus:ring-primary-dark focus:border-primary-dark outline-none transition bg-gray-50 focus:bg-white"
+                                        />
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    <ul className="mt-2">
+                                        {busca.length > 0 && alunosFiltrados.map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} />)}
+                                        {busca.length > 0 && alunosFiltrados.length === 0 && <li className="text-center text-xs text-gray-500 py-6">Nenhum aluno encontrado.</li>}
+                                        {busca.length === 0 && <li className="text-center text-xs text-gray-400 py-6 flex flex-col items-center gap-1"><Search size={24} className="opacity-20" /> Digite para buscar.</li>}
+                                    </ul>
+                                </div>
+                            )}
 
-                        {isParent && (
-                            <div style={{ padding: '0' }}>
-                                <ul style={styles.list}>
-                                    {meusFilhos.length > 0 ? (
-                                        meusFilhos.map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} />)
+                            {/* TURMAS (ADMIN) */}
+                            {isAdmin && abaAtiva === 'turmas' && (
+                                <div className="divide-y divide-gray-100">
+                                    {listaDeTurmas.map(turma => (
+                                        <div key={turma}>
+                                            <button
+                                                onClick={() => setTurmaAberta(turmaAberta === turma ? null : turma)}
+                                                className="w-full text-left p-3 flex justify-between items-center hover:bg-gray-50 transition group"
+                                            >
+                                                <span className="font-bold text-gray-700 text-sm group-hover:text-primary-dark transition">{turma}</span>
+                                                <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full group-hover:bg-blue-100 transition">
+                          {turmasAgrupadas[turma].length} {turmaAberta === turma ? '▲' : '▼'}
+                        </span>
+                                            </button>
+                                            {turmaAberta === turma && (
+                                                <ul className="bg-gray-50 border-t border-gray-100 shadow-inner">
+                                                    {turmasAgrupadas[turma].map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} />)}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* LISTA PAI (AQUI ESTAVA O ERRO - AGORA CORRIGIDO) */}
+                            {isParent && (
+                                <ul className="divide-y divide-gray-100">
+                                    {/* Usa alunosVisiveis que já contem o filtro dos filhos */}
+                                    {alunosVisiveis.length > 0 ? (
+                                        alunosVisiveis.map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} />)
                                     ) : (
-                                        <li style={styles.emptyState}>Nenhum estudante vinculado.</li>
+                                        <li className="text-center py-10 text-gray-400">Nenhum estudante vinculado.</li>
                                     )}
                                 </ul>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
+                    {/* DIREITA: OCORRÊNCIAS (Só Admin) */}
                     {isAdmin && (
-                        <div style={styles.card}>
-                            <div style={styles.cardHeader}>
-                                <h3 style={styles.cardTitle}>Últimas Ocorrências</h3>
+                        <div className="bg-white rounded-xl shadow-lg border border-gray-100 lg:col-span-2 flex flex-col h-[600px]">
+                            <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                                <h3 className="text-base font-bold text-gray-700 flex items-center gap-2">
+                                    <AlertTriangle size={18} className="text-orange-500" /> Últimas Ocorrências
+                                </h3>
                             </div>
-                            {ocorrencias.length === 0 ? (
-                                <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>Nenhum registro encontrado.</div>
-                            ) : (
-                                <ul style={styles.list}>
-                                    {ocorrencias.map(oc => (
-                                        <li key={oc.id} style={{padding: '15px', borderBottom: '1px solid #f1f3f5'}}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                                                <span style={{fontWeight:'bold', fontSize:'12px', color:'#333'}}>{oc.aluno?.nome}</span>
-                                                <span style={styles.badge(oc.tipo)}>{oc.tipo}</span>
+                            <div className="overflow-y-auto flex-1 p-4 space-y-3 custom-scrollbar">
+                                {ocorrencias.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-2">
+                                        <FileWarning size={32} className="opacity-20" />
+                                        <p className="text-sm">Nenhuma ocorrência registrada.</p>
+                                    </div>
+                                ) : (
+                                    ocorrencias.map(oc => (
+                                        <div key={oc.id} className="p-3 border border-gray-100 rounded-lg hover:shadow-md transition bg-white group">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-gray-800 text-sm">{oc.aluno?.nome}</span>
+                                                    <span className="text-[10px] text-gray-400">• {oc.aluno?.turma}</span>
+                                                </div>
+                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide border
+                          ${oc.tipo === 'AGRESSAO' ? 'bg-red-50 text-red-700 border-red-100' :
+                                                    oc.tipo === 'COMPORTAMENTO' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                                                        'bg-blue-50 text-blue-700 border-blue-100'}`}>
+                          {oc.tipo}
+                        </span>
                                             </div>
-                                            <p style={styles.descricaoTexto}>{oc.descricao}</p>
-                                            <div style={styles.dataFooter}>
-                                                {new Date(oc.dataCriacao).toLocaleDateString('pt-BR')}
+                                            <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-2 rounded border border-gray-50 italic">
+                                                "{oc.descricao}"
+                                            </p>
+                                            <div className="text-[10px] text-gray-400 mt-2 text-right font-medium flex justify-end items-center gap-1">
+                                                <CalendarDays size={10} />
+                                                {new Date(oc.dataCriacao).toLocaleDateString('pt-BR')} às {new Date(oc.dataCriacao).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}
                                             </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -230,42 +320,5 @@ function Dashboard() {
         </div>
     );
 }
-
-const styles = {
-    navbar: { background: '#003366', color: 'white', padding: '15px 0', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' },
-    containerNav: { maxWidth: '1200px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    containerBody: { maxWidth: '1200px', margin: '30px auto', padding: '0 20px' },
-    card: { background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', height: 'fit-content', minHeight: '300px' },
-    cardHeader: { padding: '15px 20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff' },
-    cardTitle: { margin: 0, fontSize: '16px', color: '#495057', fontWeight: 'bold' },
-    tabsContainer: { display: 'flex', borderBottom: '1px solid #eee' },
-    tabActive: { flex: 1, padding: '15px', background: 'white', border: 'none', borderBottom: '3px solid #003366', fontWeight: 'bold', color: '#003366', cursor: 'pointer' },
-    tabInactive: { flex: 1, padding: '15px', background: '#f8f9fa', border: 'none', borderBottom: '3px solid transparent', color: '#6c757d', cursor: 'pointer' },
-    turmaHeader: { padding: '15px', borderBottom: '1px solid #eee', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    inputBusca: { width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', boxSizing: 'border-box', marginBottom: '10px' },
-    emptyState: { padding: '30px 10px', textAlign: 'center', color: '#adb5bd', fontSize: '14px' },
-    list: { listStyle: 'none', padding: 0, margin: 0 },
-
-    itemLista: { borderBottom: '1px solid #eee' },
-    itemAlunoContent: { padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-
-    btnBoletim: { padding: '8px 20px', background: '#337ab7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', boxShadow: '0 2px 2px rgba(0,0,0,0.1)' },
-    btnFrequencia: { padding: '8px 20px', background: '#5cb85c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', boxShadow: '0 2px 2px rgba(0,0,0,0.1)' },
-
-    descricaoTexto: { margin: 0, color: '#495057', lineHeight: '1.4', fontSize: '13px' },
-    dataFooter: { fontSize: '11px', color: '#adb5bd', marginTop: '5px' },
-    btnPrimary: { background: '#0056b3', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' },
-    spinner: { border: '4px solid #f3f3f3', borderTop: '4px solid #003366', borderRadius: '50%', width: '40px', height: '40px', animation: 'spin 1s linear infinite' },
-    kpiCard: { background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
-    kpiTitle: { fontSize: '13px', textTransform: 'uppercase', color: '#6c757d', fontWeight: 'bold', marginBottom: '5px' },
-    kpiValue: { fontSize: '32px', fontWeight: 'bold', lineHeight: '1' },
-    kpiDesc: { fontSize: '12px', color: '#adb5bd', marginTop: '5px' },
-    badge: (tipo) => {
-        let bg = '#17a2b8';
-        if (tipo === 'AGRESSAO') bg = '#dc3545';
-        if (tipo === 'COMPORTAMENTO') bg = '#ffc107';
-        return { background: bg, color: tipo === 'COMPORTAMENTO' ? '#212529' : 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' };
-    }
-};
 
 export default Dashboard;

@@ -7,138 +7,98 @@ function VisualizarFrequencia() {
     const [frequencias, setFrequencias] = useState([]);
     const [aluno, setAluno] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [erro, setErro] = useState('');
+
     const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth());
     const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
 
     useEffect(() => {
-        async function carregarDados() {
+        async function carregar() {
             try {
                 setLoading(true);
-                console.log("🔍 Buscando dados para aluno ID:", alunoId);
-
                 const respAlunos = await api.get('/alunos');
                 const alunoEncontrado = respAlunos.data.find(a => a.id === Number(alunoId));
-
-                if (!alunoEncontrado) {
-                    setErro("Aluno não encontrado.");
-                    return;
-                }
                 setAluno(alunoEncontrado);
-
                 const respFreq = await api.get(`/frequencias/aluno/${alunoId}`);
-                console.log("📅 Frequências encontradas:", respFreq.data);
                 setFrequencias(respFreq.data || []);
-
-            } catch (err) {
-                console.error("❌ Erro ao carregar:", err);
-                setErro("Erro de conexão ao buscar dados.");
-            } finally {
-                setLoading(false);
-            }
+            } catch (err) { console.error(err); }
+            finally { setLoading(false); }
         }
-
-        if (alunoId) {
-            carregarDados();
-        }
+        if (alunoId) carregar();
     }, [alunoId]);
 
     const getStatusDia = (dia) => {
         try {
-            // Formata data YYYY-MM-DD
-            const mesFormatado = String(mesSelecionado + 1).padStart(2, '0');
-            const diaFormatado = String(dia).padStart(2, '0');
-            const dataString = `${anoSelecionado}-${mesFormatado}-${diaFormatado}`;
-
+            const dataString = `${anoSelecionado}-${String(mesSelecionado + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
             const registro = (frequencias || []).find(f => f.data === dataString);
-
             if (!registro) return null;
             return registro.presente ? 'P' : 'F';
-            // eslint-disable-next-line no-unused-vars
-        } catch (e) {
-            return null;
-        }
+        } catch { return null; }
     };
 
     const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-
-    if (loading) return <div style={{padding:'40px', textAlign:'center'}}>⌛ Carregando dados...</div>;
-    if (erro) return <div style={{padding:'40px', textAlign:'center', color:'red'}}>⚠️ {erro} <br/><Link to="/">Voltar</Link></div>;
-    if (!aluno) return null;
-
     const diasNoMes = new Date(anoSelecionado, mesSelecionado + 1, 0).getDate();
     const listaDias = Array.from({ length: diasNoMes }, (_, i) => i + 1);
 
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-500">Carregando...</div>;
+    if (!aluno) return null;
+
     return (
-        <div style={{ background: '#f4f6f9', minHeight: '100vh', padding: '20px', fontFamily: "'Segoe UI', sans-serif" }}>
-            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div className="min-h-screen bg-gray-100 font-sans">
+            <nav className="bg-primary-dark text-white shadow-md">
+                <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <h2 className="text-xl font-bold flex items-center gap-2"><span>📅</span> Histórico de Frequência</h2>
+                    <Link to="/"><button className="px-4 py-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg text-sm font-bold transition">Voltar</button></Link>
+                </div>
+            </nav>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h2 style={{ color: '#003366', margin: 0 }}>📅 Frequência Escolar</h2>
-                    <Link to="/"><button style={styles.btnVoltar}>Voltar</button></Link>
+            <div className="max-w-4xl mx-auto px-4 py-8">
+
+                {/* INFO DO ALUNO */}
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border-l-4 border-primary-dark">
+                    <h3 className="text-xl font-bold text-gray-800">{aluno.nome}</h3>
+                    <p className="text-sm text-gray-500 mt-1">Turma: {aluno.turma} • Matrícula: {aluno.matricula}</p>
                 </div>
 
-                <div style={styles.cardInfo}>
-                    <h3 style={{margin: '0 0 10px 0', color: '#333'}}>{aluno.nome}</h3>
-                    <p style={{margin: 0, color: '#666'}}>Turma: {aluno.turma} | Matrícula: {aluno.matricula}</p>
-                </div>
-
-                <div style={styles.card}>
-                    <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                {/* CONTROLES */}
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                    <div className="flex flex-wrap gap-4 mb-6 pb-6 border-b border-gray-100">
                         <div>
-                            <label style={styles.label}>MÊS:</label>
-                            <select value={mesSelecionado} onChange={e => setMesSelecionado(parseInt(e.target.value))} style={styles.select}>
-                                {nomesMeses.map((nome, index) => (
-                                    <option key={index} value={index}>{nome}</option>
-                                ))}
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Mês</label>
+                            <select value={mesSelecionado} onChange={e => setMesSelecionado(parseInt(e.target.value))} className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg font-medium text-gray-700 focus:ring-2 focus:ring-primary-dark outline-none">
+                                {nomesMeses.map((nome, index) => <option key={index} value={index}>{nome}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label style={styles.label}>ANO:</label>
-                            <input type="number" value={anoSelecionado} onChange={e => setAnoSelecionado(parseInt(e.target.value))} style={{...styles.select, width: '80px'}} />
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Ano</label>
+                            <input type="number" value={anoSelecionado} onChange={e => setAnoSelecionado(parseInt(e.target.value))} className="w-24 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg font-medium text-gray-700 focus:ring-2 focus:ring-primary-dark outline-none" />
                         </div>
                     </div>
 
-                    <div style={styles.calendarioContainer}>
-                        <h4 style={{borderBottom: '1px solid #eee', paddingBottom: '10px', margin: '0 0 15px 0', color: '#555'}}>Visualização Mensal</h4>
-
-                        <div style={styles.gridDias}>
+                    {/* CALENDÁRIO GRID */}
+                    <div>
+                        <h4 className="text-sm font-bold text-gray-500 uppercase mb-4">Visualização Mensal</h4>
+                        <div className="grid grid-cols-7 gap-2 sm:gap-4">
                             {listaDias.map(dia => {
                                 const status = getStatusDia(dia);
                                 return (
-                                    <div key={dia} style={styles.diaBox}>
-                                        <span style={styles.numeroDia}>{dia}</span>
-                                        {status === 'P' && <div style={styles.badgeP}>P</div>}
-                                        {status === 'F' && <div style={styles.badgeF}>F</div>}
+                                    <div key={dia} className="aspect-square border border-gray-100 rounded-lg bg-gray-50 flex flex-col items-center justify-center relative">
+                                        <span className="text-xs font-bold text-gray-400 absolute top-1 left-2">{dia}</span>
+                                        {status === 'P' && <div className="w-8 h-8 bg-secondary-green text-white rounded flex items-center justify-center font-bold text-sm shadow-sm">P</div>}
+                                        {status === 'F' && <div className="w-8 h-8 bg-error-red text-white rounded flex items-center justify-center font-bold text-sm shadow-sm">F</div>}
                                     </div>
                                 );
                             })}
                         </div>
                     </div>
 
-                    <div style={{marginTop: '20px', fontSize: '12px', display: 'flex', gap: '15px'}}>
-                        <div style={{display:'flex', alignItems:'center', gap:'5px'}}><div style={styles.badgeP}>P</div> Presente</div>
-                        <div style={{display:'flex', alignItems:'center', gap:'5px'}}><div style={styles.badgeF}>F</div> Falta</div>
+                    <div className="mt-6 flex gap-6 text-sm">
+                        <div className="flex items-center gap-2"><div className="w-4 h-4 bg-secondary-green rounded"></div> <span className="text-gray-600 font-medium">Presente</span></div>
+                        <div className="flex items-center gap-2"><div className="w-4 h-4 bg-error-red rounded"></div> <span className="text-gray-600 font-medium">Falta</span></div>
                     </div>
                 </div>
-
             </div>
         </div>
     );
 }
-
-const styles = {
-    cardInfo: { background: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', borderLeft: '5px solid #003366', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' },
-    card: { background: 'white', padding: '25px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' },
-    select: { padding: '8px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '14px' },
-    label: { fontWeight: 'bold', marginRight: '5px', fontSize: '12px', color: '#666' },
-    btnVoltar: { padding: '8px 15px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' },
-    calendarioContainer: { border: '1px solid #ddd', padding: '15px', borderRadius: '5px' },
-    gridDias: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gap: '10px' },
-    diaBox: { border: '1px solid #eee', borderRadius: '5px', height: '50px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#fafafa' },
-    numeroDia: { fontSize: '10px', color: '#999', marginBottom: '2px' },
-    badgeP: { width: '18px', height: '18px', background: '#28a745', color: 'white', fontSize: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '3px' },
-    badgeF: { width: '18px', height: '18px', background: '#dc3545', color: 'white', fontSize: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '3px' }
-};
 
 export default VisualizarFrequencia;

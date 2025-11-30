@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import { Save, ArrowLeft, Bot, Sparkles, Loader2 } from 'lucide-react';
 
 function NovaOcorrencia() {
     const navigate = useNavigate();
     const [alunos, setAlunos] = useState([]);
+
     const [alunoId, setAlunoId] = useState('');
     const [turmaDisplay, setTurmaDisplay] = useState('');
     const [tipo, setTipo] = useState('');
@@ -22,7 +24,6 @@ function NovaOcorrencia() {
         setTurmaDisplay(aluno ? aluno.turma : '');
     }
 
-
     async function handleMelhorarTexto() {
         if (!descricao) {
             alert('⚠️ Escreva algo na descrição primeiro para a IA melhorar!');
@@ -37,7 +38,7 @@ function NovaOcorrencia() {
             setDescricao(resp.data);
         } catch (erro) {
             console.error(erro);
-            alert('❌ Erro ao consultar a IA. Verifique se o Backend está rodando.');
+            alert('❌ Erro ao consultar a IA.');
         } finally {
             setCarregandoIA(false);
         }
@@ -51,24 +52,36 @@ function NovaOcorrencia() {
             navigate('/');
         } catch (erro) {
             console.error(erro);
-            alert('❌ Erro ao salvar! Verifique os dados.');
+            alert('❌ Erro ao salvar!');
         }
     }
 
     return (
-        <div style={{ background: '#f4f6f9', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: "'Segoe UI', sans-serif" }}>
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans">
+            <div className="max-w-2xl w-full bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
 
-            <div style={styles.card}>
-                <div style={styles.header}>
-                    <h2 style={styles.title}>Registrar Ocorrência</h2>
-                    <p style={styles.subtitle}>Preencha os dados abaixo para formalizar o registro.</p>
+                <div className="bg-white px-8 py-6 border-b border-gray-100 flex justify-between items-center">
+                    <div>
+                        <h2 className="text-2xl font-bold text-primary-dark">Registrar Ocorrência</h2>
+                        <p className="text-sm text-gray-500">Formalização de evento disciplinar</p>
+                    </div>
+                    <Link to="/">
+                        <button className="text-gray-400 hover:text-gray-600 font-medium text-sm transition flex items-center gap-1">
+                            <ArrowLeft size={16} /> Cancelar
+                        </button>
+                    </Link>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
 
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Estudante</label>
-                        <select value={alunoId} onChange={handleAlunoChange} required style={styles.select}>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Estudante</label>
+                        <select
+                            value={alunoId}
+                            onChange={handleAlunoChange}
+                            required
+                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-dark focus:ring-2 focus:ring-primary-dark focus:ring-opacity-50 outline-none transition bg-white"
+                        >
                             <option value="" disabled>Selecione na lista...</option>
                             {alunos.map(a => (
                                 <option key={a.id} value={a.id}>{a.nome}</option>
@@ -76,15 +89,26 @@ function NovaOcorrencia() {
                         </select>
                     </div>
 
-                    <div style={styles.row}>
-                        <div style={{...styles.formGroup, flex: 1, marginRight: '15px'}}>
-                            <label style={styles.label}>Turma</label>
-                            <input type="text" value={turmaDisplay} disabled style={styles.inputDisabled} />
+                    <div className="flex flex-col md:flex-row gap-6">
+                        <div className="flex-1">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Turma</label>
+                            <input
+                                type="text"
+                                value={turmaDisplay}
+                                disabled
+                                className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed"
+                                placeholder="Automático"
+                            />
                         </div>
 
-                        <div style={{...styles.formGroup, flex: 1}}>
-                            <label style={styles.label}>Classificação</label>
-                            <select value={tipo} onChange={e => setTipo(e.target.value)} required style={styles.select}>
+                        <div className="flex-1">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Classificação</label>
+                            <select
+                                value={tipo}
+                                onChange={e => setTipo(e.target.value)}
+                                required
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-dark focus:ring-2 focus:ring-primary-dark focus:ring-opacity-50 outline-none transition bg-white"
+                            >
                                 <option value="" disabled>Selecione...</option>
                                 <option value="COMPORTAMENTO">Comportamento</option>
                                 <option value="ATRASO">Atraso</option>
@@ -95,44 +119,41 @@ function NovaOcorrencia() {
                         </div>
                     </div>
 
-                    <div style={styles.formGroup}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                            <label style={{...styles.label, marginBottom: 0}}>Descrição Detalhada</label>
+                    <div>
+                        <div className="flex justify-between items-end mb-2">
+                            <label className="block text-xs font-bold text-gray-500 uppercase">Descrição Detalhada</label>
 
                             <button
                                 type="button"
                                 onClick={handleMelhorarTexto}
                                 disabled={carregandoIA}
-                                style={{
-                                    background: carregandoIA ? '#ccc' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '20px',
-                                    padding: '5px 12px',
-                                    fontSize: '11px',
-                                    cursor: carregandoIA ? 'wait' : 'pointer',
-                                    fontWeight: 'bold',
-                                    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                                    transition: 'all 0.2s'
-                                }}
+                                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white shadow-md transition transform active:scale-95 ${carregandoIA ? 'bg-gray-400 cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700'}`}
                             >
-                                {carregandoIA ? '🤖 Pensando...' : '✨ Melhorar com IA'}
+                                {carregandoIA ? (
+                                    <><Loader2 size={12} className="animate-spin" /> Processando...</>
+                                ) : (
+                                    <><Sparkles size={12} /> Melhorar com IA</>
+                                )}
                             </button>
                         </div>
 
                         <textarea
-                            rows="5"
+                            rows="6"
                             value={descricao}
                             onChange={e => setDescricao(e.target.value)}
                             required
-                            style={styles.textarea}
-                            placeholder="Ex: O aluno xingou o colega e saiu da sala..."
+                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-dark focus:ring-2 focus:ring-primary-dark focus:ring-opacity-50 outline-none transition text-gray-700 leading-relaxed resize-y"
+                            placeholder="Descreva o fato ocorrido de forma objetiva..."
                         />
                     </div>
 
-                    <div style={styles.actions}>
-                        <Link to="/" style={styles.btnCancel}>Cancelar</Link>
-                        <button type="submit" style={styles.btnSubmit}>Salvar Registro</button>
+                    <div className="pt-4 flex justify-end gap-4">
+                        <button
+                            type="submit"
+                            className="flex items-center gap-2 px-8 py-3 bg-primary-dark hover:bg-opacity-90 text-white font-bold rounded-lg shadow-md transition transform hover:-translate-y-0.5"
+                        >
+                            <Save size={18} /> Salvar Registro
+                        </button>
                     </div>
 
                 </form>
@@ -140,21 +161,5 @@ function NovaOcorrencia() {
         </div>
     );
 }
-
-const styles = {
-    card: { background: 'white', padding: '40px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', maxWidth: '500px' },
-    header: { marginBottom: '30px', borderBottom: '1px solid #eee', paddingBottom: '20px' },
-    title: { margin: '0 0 10px 0', color: '#003366', fontSize: '22px' },
-    subtitle: { margin: 0, color: '#6c757d', fontSize: '14px' },
-    formGroup: { marginBottom: '20px' },
-    row: { display: 'flex' },
-    label: { display: 'block', marginBottom: '8px', color: '#495057', fontSize: '13px', fontWeight: '600', textTransform: 'uppercase' },
-    select: { width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ced4da', fontSize: '14px', background: 'white' },
-    inputDisabled: { width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #e9ecef', background: '#f8f9fa', color: '#495057', boxSizing: 'border-box' },
-    textarea: { width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ced4da', fontSize: '14px', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' },
-    actions: { display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '30px', gap: '15px' },
-    btnCancel: { textDecoration: 'none', color: '#6c757d', fontSize: '14px', fontWeight: '500' },
-    btnSubmit: { background: '#0056b3', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }
-};
 
 export default NovaOcorrencia;
