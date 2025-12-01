@@ -29,15 +29,14 @@ public class AlunoService {
         aluno.setNome(dados.nome());
         aluno.setTurma(dados.turma());
         aluno.setMatricula(dados.matricula());
-
-        // Se vier situação no DTO, usa. Se não, o padrão é ATIVO.
+        // Se vier status, usa. Se não, usa o padrão (ATIVO)
         if (dados.situacao() != null) {
             aluno.setSituacao(dados.situacao());
         }
-
         return repository.save(aluno);
     }
 
+    // Lógica para atualizar status
     public Aluno atualizarStatus(Long id, SituacaoMatricula novaSituacao) {
         Aluno aluno = buscarPorId(id);
         aluno.setSituacao(novaSituacao);

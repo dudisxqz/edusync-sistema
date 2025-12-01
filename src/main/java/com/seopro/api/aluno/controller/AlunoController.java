@@ -1,7 +1,7 @@
 package com.seopro.api.aluno.controller;
 
 import com.seopro.api.aluno.model.Aluno;
-import com.seopro.api.aluno.model.Aluno.SituacaoMatricula;
+import com.seopro.api.aluno.model.Aluno.SituacaoMatricula; // Importe o Enum
 import com.seopro.api.aluno.model.dto.AlunoDTO;
 import com.seopro.api.aluno.service.AlunoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,7 @@ public class AlunoController {
         return service.listarTodos();
     }
 
+    // Adicionei para buscar um aluno específico (usado na Declaração)
     @GetMapping("/{id}")
     public Aluno buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
@@ -31,7 +32,7 @@ public class AlunoController {
         return service.criar(dados);
     }
 
-    // NOVO ENDPOINT: Atualizar apenas a situação (Ex: Transferir aluno)
+    // --- NOVO ENDPOINT: MUDAR STATUS ---
     @PatchMapping("/{id}/status")
     public Aluno atualizarStatus(@PathVariable Long id, @RequestBody SituacaoMatricula situacao) {
         return service.atualizarStatus(id, situacao);

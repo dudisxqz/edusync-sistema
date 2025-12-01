@@ -6,5 +6,5 @@ public record AlunoDTO(
         String nome,
         String turma,
         String matricula,
-        SituacaoMatricula situacao // Novo campo opcional no cadastro
+        SituacaoMatricula situacao // Novo campo opcional
 ) {}

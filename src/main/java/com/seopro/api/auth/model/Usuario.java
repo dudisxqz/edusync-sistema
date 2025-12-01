@@ -22,9 +22,16 @@ public class Usuario implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Perfil perfil;
 
-    public enum Perfil { ADMIN, RESPONSAVEL }
+    // --- NOVOS PERFIS ADICIONADOS ---
+    public enum Perfil {
+        ADMIN,          // Diretor
+        COORDENADOR,    // Coordenador Pedagógico
+        SECRETARIA,     // Secretária Escolar
+        PROFESSOR,      // Docente
+        RESPONSAVEL,    // Pais
+        ALUNO           // O próprio estudante
+    }
 
-    // Construtores
     public Usuario() {}
     public Usuario(String login, String senha, Perfil perfil) {
         this.login = login;
@@ -32,7 +39,6 @@ public class Usuario implements UserDetails {
         this.perfil = perfil;
     }
 
-    // Métodos do Spring Security
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + perfil.name()));
