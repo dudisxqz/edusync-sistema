@@ -1,6 +1,5 @@
 import React from 'react';
 
-// Recebemos 'frequencias' agora
 export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioIA }, ref) => {
 
     const dadosAluno = aluno || { nome: "", matricula: "", turma: "", id: 0 };
@@ -8,18 +7,14 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
     const safeNotas = notas || [];
     const safeFreq = frequencias || [];
 
-    // --- CÁLCULO DE FALTAS REAIS ---
-    // Conta quantos registros têm presente = false
+    // --- CÁLCULO DE FALTAS ---
+    // Filtra apenas as faltas (presente == false) para este aluno específico (já filtrado pela API, mas garantindo)
+    // Nota: Como o endpoint da API já traz as faltas DO ALUNO, basta contar quantos false tem.
     const totalFaltasGeral = safeFreq.filter(f => f.presente === false).length;
 
     const getNota = (materia, bim) => {
         const n = safeNotas.find(nota => nota.aluno?.id === dadosAluno.id && nota.materia === materia && nota.bimestre === bim);
         return n ? n.valor.toFixed(1) : "-";
-    };
-
-    // Como a chamada é geral, não temos falta por matéria ainda. Deixamos "-" ou vazio nas colunas específicas.
-    const getFaltasMateria = (materia, bim) => {
-        return "-";
     };
 
     const getMediaFinal = (materia) => {
@@ -37,7 +32,6 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
 
     return (
         <div ref={ref} style={styles.page}>
-
             {/* CABEÇALHO */}
             <div style={styles.header}>
                 <div style={{fontSize:'10px', fontWeight:'bold', textTransform:'uppercase'}}>Secretaria de Estado da Educação</div>
@@ -89,11 +83,11 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
                 </tbody>
             </table>
 
-            {/* RODAPÉ STATUS - AQUI MOSTRA O TOTAL DE FALTAS REAL */}
+            {/* RODAPÉ STATUS */}
             <div style={{marginTop:'10px', border:'1px solid #999', padding:'5px', display:'flex', justifyContent:'space-between', fontSize:'11px', fontWeight:'bold', background: '#f9f9f9'}}>
                 <div>Situação da Turma: FECHADA</div>
 
-                {/* EXIBE A CONTAGEM REAL AQUI */}
+                {/* EXIBINDO FALTAS AQUI */}
                 <div style={{color: totalFaltasGeral > 10 ? 'red' : 'black'}}>
                     Total de Faltas Registradas: {totalFaltasGeral}
                 </div>
@@ -101,7 +95,7 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
                 <div>Situação: <span style={{color:'green'}}>CURSANDO</span></div>
             </div>
 
-            {/* PARECER DA IA */}
+            {/* PARECER IA */}
             {relatorioIA && (
                 <div style={{marginTop: '20px', border:'1px solid #999', padding:'10px'}}>
                     <h4 style={{margin:'0 0 10px 0', fontSize:'12px', textTransform:'uppercase', borderBottom:'1px solid #eee', paddingBottom:'5px'}}>
@@ -109,9 +103,7 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
                     </h4>
                     <div style={{fontSize:'11px', textAlign:'justify', lineHeight:'1.6', fontFamily:'Times New Roman, serif'}}>
                         {formatarTextoIA(relatorioIA).map((paragrafo, i) => (
-                            <p key={i} style={{marginBottom: '8px', textIndent: '20px'}}>
-                                {paragrafo}
-                            </p>
+                            <p key={i} style={{marginBottom: '8px', textIndent: '20px'}}>{paragrafo}</p>
                         ))}
                     </div>
                 </div>
@@ -121,13 +113,12 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
                 <div style={{borderTop:'1px solid #000', width:'200px', paddingTop:'5px'}}>Direção</div>
                 <div style={{borderTop:'1px solid #000', width:'200px', paddingTop:'5px'}}>Secretaria</div>
             </div>
-
         </div>
     );
 });
 
 const styles = {
-    page: { padding: '30px', fontFamily: 'Arial, sans-serif', color: '#000', background: 'white', width: '100%' },
+    page: { padding: '20px 30px', fontFamily: 'Arial, sans-serif', color: '#000', background: 'white', width: '100%', boxSizing: 'border-box' },
     header: { textAlign: 'center', marginBottom: '15px' },
     infoBox: { border: '1px solid #999', padding: '8px', marginBottom: '15px', fontSize: '11px' },
     row: { display: 'flex', justifyContent: 'space-between', marginBottom: '3px' },

@@ -6,8 +6,7 @@ import lombok.Data;
 @Data
 @Entity
 public class Aluno {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String nome;
@@ -15,4 +14,14 @@ public class Aluno {
 
     @Column(unique = true)
     private String matricula;
+
+    @Enumerated(EnumType.STRING)
+    private SituacaoMatricula situacao = SituacaoMatricula.ATIVO;
+
+    public enum SituacaoMatricula {
+        ATIVO,
+        TRANSFERIDO,
+        EVADIDO,
+        FORMADO
+    }
 }
