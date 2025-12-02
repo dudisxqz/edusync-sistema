@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import {
     LayoutDashboard, CalendarDays, BarChart3, PlusCircle, BookOpen,
-    Calendar, UserPlus, LogOut, Megaphone, CreditCard, FileText
+    Calendar, UserPlus, LogOut, Megaphone, CreditCard, FileSignature, UserCog
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -11,9 +11,22 @@ export function Sidebar() {
     const location = useLocation();
 
     const role = user?.role;
+
+    // Perfis
     const isStaff = ['ADMIN', 'COORDENADOR', 'SECRETARIA', 'PROFESSOR'].includes(role);
-    const isAdmin = ['ADMIN', 'SECRETARIA'].includes(role);
+    const isAdmin = ['ADMIN', 'SECRETARIA'].includes(role); // Podem matricular
+    const isSecretaria = ['ADMIN', 'SECRETARIA'].includes(role); // Podem emitir documentos
     const isParent = ['RESPONSAVEL', 'ALUNO'].includes(role);
+
+    // Formata nome do cargo
+    const getRoleName = (r) => {
+        if (r === 'ADMIN') return 'Coordenação';
+        if (r === 'SECRETARIA') return 'Secretaria';
+        if (r === 'PROFESSOR') return 'Professor';
+        if (r === 'RESPONSAVEL') return 'Responsável';
+        if (r === 'ALUNO') return 'Estudante';
+        return r;
+    };
 
     const isActive = (path) => location.pathname === path
         ? "bg-blue-600/10 text-blue-400 border-r-4 border-blue-500"
@@ -46,11 +59,16 @@ export function Sidebar() {
                 {isStaff && (
                     <>
                         <div className="px-6 mt-8 mb-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Gestão</div>
-                        {isAdmin && <LinkItem to="/matricula" icon={UserPlus} label="Matrícula" />}
+
+                        {isAdmin && <LinkItem to="/matricula" icon={UserPlus} label="Nova Matrícula" />}
+
+                        {/* Botão específico para secretaria */}
+                        {isSecretaria && <LinkItem to="/meus-documentos" icon={FileSignature} label="Emissão de Docs" />}
+
                         <LinkItem to="/grade" icon={Calendar} label="Grade Horária" />
-                        <LinkItem to="/tarefas" icon={BookOpen} label="Tarefas & AVA" />
                         <LinkItem to="/chamada" icon={CalendarDays} label="Chamada Online" />
                         <LinkItem to="/desempenho" icon={BarChart3} label="Lançar Notas" />
+                        <LinkItem to="/tarefas" icon={BookOpen} label="Gestão de Tarefas" />
                         <LinkItem to="/nova-ocorrencia" icon={PlusCircle} label="Ocorrência" />
                     </>
                 )}
@@ -59,29 +77,41 @@ export function Sidebar() {
                     <>
                         <div className="px-6 mt-8 mb-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Aluno</div>
                         <LinkItem to="/tarefas" icon={BookOpen} label="Minhas Tarefas" />
+                        <LinkItem to="/meus-documentos" icon={FileSignature} label="Emissão de Documentos" />
                         <LinkItem to="/minha-carteirinha" icon={CreditCard} label="Carteirinha Digital" />
                     </>
                 )}
             </nav>
 
-            {/* RODAPÉ USER (CLICÁVEL - LEVA AO PERFIL) */}
-            <div className="p-6 border-t border-slate-800 bg-[#020617]">
+            {/* RODAPÉ DE USUÁRIO */}
+            <div className="p-5 border-t border-slate-800 bg-[#020617]">
 
-                <Link to="/perfil" className="flex items-center gap-3 mb-4 p-2 -mx-2 rounded-lg hover:bg-white/5 transition group cursor-pointer" title="Editar Perfil">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm shadow-lg border-2 border-slate-800 group-hover:border-blue-500 transition">
+                {/* Info do Usuário */}
+                <div className="flex items-center gap-3 mb-4 px-1">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm shadow-lg border-2 border-slate-800 text-white">
                         {user?.login?.substring(0,2).toUpperCase()}
                     </div>
                     <div className="overflow-hidden">
-                        <p className="text-sm font-bold truncate text-slate-200 group-hover:text-white transition">{user?.login}</p>
+                        <p className="text-sm font-bold truncate text-slate-200">{user?.login}</p>
                         <p className="text-[10px] text-slate-500 truncate uppercase font-bold tracking-wider flex items-center gap-1">
-                            {user?.role} <span className="text-blue-500 text-[8px]">●</span>
+                            {getRoleName(role)} <span className="text-green-500 text-[6px]">●</span>
                         </p>
                     </div>
-                </Link>
+                </div>
 
-                <button onClick={signOut} className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-800 hover:bg-red-500/10 hover:text-red-400 text-slate-400 rounded-lg text-xs font-bold transition border border-slate-700 hover:border-red-500/50">
-                    <LogOut size={16} /> ENCERRAR SESSÃO
-                </button>
+                {/* Botões de Ação (Lado a Lado) - RESTAURADO */}
+                <div className="grid grid-cols-2 gap-2">
+                    <Link to="/perfil">
+                        <button className="w-full flex items-center justify-center gap-2 py-2 bg-slate-800 hover:bg-blue-600 hover:text-white text-slate-400 rounded-lg text-xs font-bold transition border border-slate-700 group">
+                            <UserCog size={14} className="group-hover:scale-110 transition-transform"/> Perfil
+                        </button>
+                    </Link>
+
+                    <button onClick={signOut} className="w-full flex items-center justify-center gap-2 py-2 bg-slate-800 hover:bg-red-600 hover:text-white text-slate-400 rounded-lg text-xs font-bold transition border border-slate-700 group">
+                        <LogOut size={14} className="group-hover:scale-110 transition-transform"/> Sair
+                    </button>
+                </div>
+
             </div>
         </aside>
     );

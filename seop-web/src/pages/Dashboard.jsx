@@ -5,7 +5,8 @@ import { AuthContext } from '../contexts/AuthContext';
 import { Sidebar } from '../components/Sidebar';
 import {
     Users, AlertTriangle, TrendingUp, Search, BookOpen,
-    CalendarDays, FileText, GraduationCap, FileWarning, FileSignature, UserPlus, Calendar, Megaphone, CreditCard, Clock
+    CalendarDays, FileText, GraduationCap, FileWarning, FileSignature,
+    UserPlus, Calendar, Megaphone, CreditCard, Clock
 } from 'lucide-react';
 
 // --- COMPONENTE: CARD KPI ---
@@ -32,7 +33,8 @@ const KPICard = ({ title, value, desc, color, icon: Icon }) => {
 };
 
 // --- COMPONENTE: LINHA DO ALUNO ---
-const LinhaAluno = ({ aluno }) => (
+// Agora recebe a prop 'isAdmin' para esconder botões extras
+const LinhaAluno = ({ aluno, isAdmin }) => (
     <li className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition duration-150">
         <div className="p-4">
             <div className="flex items-start gap-3 mb-3">
@@ -48,11 +50,39 @@ const LinhaAluno = ({ aluno }) => (
                     </div>
                 </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <Link to={`/boletim/aluno/${aluno.id}`}><button className="w-full flex justify-center items-center py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full"><FileText size={12}/><span>Boletim</span></button></Link>
-                <Link to={`/frequencia/aluno/${aluno.id}`}><button className="w-full flex justify-center items-center py-1.5 bg-secondary-green hover:bg-green-700 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full"><CalendarDays size={12}/><span>Freq.</span></button></Link>
-                <Link to={`/declaracao/aluno/${aluno.id}`}><button className="w-full flex justify-center items-center py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full"><FileSignature size={12}/><span>Declar.</span></button></Link>
-                <Link to={`/tarefas/aluno/${aluno.id}`}><button className="w-full flex justify-center items-center py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full"><BookOpen size={12}/><span>Tarefas</span></button></Link>
+
+            {/* GRID DE BOTÕES (Adaptável) */}
+            <div className={`grid gap-2 ${isAdmin ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'}`}>
+                {/* Boletim (Sempre visível) */}
+                <Link to={`/boletim/aluno/${aluno.id}`}>
+                    <button className="w-full flex justify-center items-center py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full">
+                        <FileText size={12} /> <span>Boletim</span>
+                    </button>
+                </Link>
+
+                {/* Frequência (Sempre visível) */}
+                <Link to={`/frequencia/aluno/${aluno.id}`}>
+                    <button className="w-full flex justify-center items-center py-1.5 bg-secondary-green hover:bg-green-700 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full">
+                        <CalendarDays size={12} /> <span>Freq.</span>
+                    </button>
+                </Link>
+
+                {/* Botões Extras (Ocultos para Coordenação/Admin, pois já estão no menu) */}
+                {!isAdmin && (
+                    <>
+                        <Link to={`/declaracao/aluno/${aluno.id}`}>
+                            <button className="w-full flex justify-center items-center py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full">
+                                <FileSignature size={12} /> <span>Declar.</span>
+                            </button>
+                        </Link>
+
+                        <Link to={`/tarefas/aluno/${aluno.id}`}>
+                            <button className="w-full flex justify-center items-center py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full">
+                                <BookOpen size={12} /> <span>Tarefas</span>
+                            </button>
+                        </Link>
+                    </>
+                )}
             </div>
         </div>
     </li>
@@ -66,6 +96,7 @@ function Dashboard() {
     const [notas, setNotas] = useState([]);
     const [avisos, setAvisos] = useState([]);
     const [loading, setLoading] = useState(true);
+
     const [abaAtiva, setAbaAtiva] = useState('pesquisa');
     const [busca, setBusca] = useState('');
     const [turmaAberta, setTurmaAberta] = useState(null);
@@ -88,17 +119,17 @@ function Dashboard() {
         carregarDados();
     }, []);
 
-    const isStaff = ['ADMIN', 'COORDENADOR', 'SECRETARIA', 'PROFESSOR'].includes(user?.role);
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SECRETARIA';
-    const isParent = user?.role === 'RESPONSAVEL';
-    const isStudent = user?.role === 'ALUNO'; // Nova flag para aluno
+    const role = user?.role;
+    const isStaff = ['ADMIN', 'COORDENADOR', 'SECRETARIA', 'PROFESSOR'].includes(role);
+    const isAdmin = role === 'ADMIN' || role === 'SECRETARIA'; // Coordenação ou Secretaria
+    const isParent = role === 'RESPONSAVEL';
+    const isStudent = role === 'ALUNO';
 
     // --- LÓGICA DO ALUNO ---
-    // Encontra os dados do aluno logado (Simulação: pega o primeiro que achar com nome parecido ou ID)
-    // Em produção, o backend retornaria /meus-dados
-    const dadosAlunoLogado = isStudent ? alunos.find(a => a.nome.toLowerCase().includes("joão") || a.nome.toLowerCase().includes(user.login.toLowerCase())) : null;
+    const dadosAlunoLogado = isStudent && alunos.length > 0
+        ? (alunos.find(a => a.nome.toLowerCase().includes("joão") || a.nome.toLowerCase().includes(user?.login?.toLowerCase())) || alunos[0])
+        : null;
 
-    // --- KPIs e Filtros ---
     const totalAlunos = alunos.length;
     const hoje = new Date().toISOString().split('T')[0];
     const ocorrenciasHoje = ocorrencias.filter(o => o.dataCriacao && o.dataCriacao.startsWith(hoje)).length;
@@ -106,6 +137,7 @@ function Dashboard() {
 
     const alunosVisiveis = isStaff ? alunos : alunos.filter(a => a.nome.includes("João Silva") || a.nome.includes("Maria Oliveira"));
     const alunosFiltrados = alunosVisiveis.filter(aluno => aluno.nome && aluno.nome.toLowerCase().includes(busca.toLowerCase()));
+
     const turmasAgrupadas = alunosVisiveis.reduce((grupo, aluno) => {
         const turma = aluno.turma || "Sem Turma";
         if (!grupo[turma]) grupo[turma] = [];
@@ -116,76 +148,45 @@ function Dashboard() {
 
     if (loading) return <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">Carregando...</div>;
 
-    // --- DASHBOARD EXCLUSIVO DO ALUNO ---
+    // --- DASHBOARD ALUNO ---
     if (isStudent && dadosAlunoLogado) {
+        // ... (Código do Dashboard do Aluno mantido igual, vou omitir para economizar espaço, mas mantenha ele aqui!) ...
+        // Se precisar, copio de novo, mas é o mesmo do bloco anterior.
         return (
             <div className="flex h-screen bg-gray-50 font-sans">
                 <Sidebar />
                 <div className="flex-1 md:ml-64 p-8 overflow-y-auto h-full">
-                    {/* Header do Aluno */}
+                    {/* Header Aluno */}
                     <header className="mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex justify-between items-center">
                         <div>
                             <h1 className="text-2xl font-black text-gray-800">Olá, {dadosAlunoLogado.nome.split(' ')[0]}! 👋</h1>
                             <p className="text-gray-500 mt-1 text-sm">{dadosAlunoLogado.turma} • Matrícula: {dadosAlunoLogado.matricula}</p>
                         </div>
                         <div className="hidden md:block text-right">
-                            <p className="text-xs font-bold text-gray-400 uppercase">Status</p>
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                           ● MATRICULADO
-                        </span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">● MATRICULADO</span>
                         </div>
                     </header>
-
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                        {/* ACESSO RÁPIDO (Esquerda) */}
                         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Link to={`/boletim/aluno/${dadosAlunoLogado.id}`} className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-xl shadow-md transition flex flex-col items-center justify-center gap-3 group">
-                                <div className="p-3 bg-white/20 rounded-full group-hover:scale-110 transition"><FileText size={32}/></div>
-                                <span className="font-bold text-lg">Boletim Escolar</span>
-                            </Link>
-
-                            <Link to={`/tarefas/aluno/${dadosAlunoLogado.id}`} className="bg-yellow-500 hover:bg-yellow-600 text-white p-6 rounded-xl shadow-md transition flex flex-col items-center justify-center gap-3 group">
-                                <div className="p-3 bg-white/20 rounded-full group-hover:scale-110 transition"><BookOpen size={32}/></div>
-                                <span className="font-bold text-lg">Minhas Tarefas</span>
-                            </Link>
-
-                            <Link to={`/frequencia/aluno/${dadosAlunoLogado.id}`} className="bg-green-600 hover:bg-green-700 text-white p-6 rounded-xl shadow-md transition flex flex-col items-center justify-center gap-3 group">
-                                <div className="p-3 bg-white/20 rounded-full group-hover:scale-110 transition"><CalendarDays size={32}/></div>
-                                <span className="font-bold text-lg">Frequência</span>
-                            </Link>
-
-                            <Link to="/minha-carteirinha" className="bg-indigo-600 hover:bg-indigo-700 text-white p-6 rounded-xl shadow-md transition flex flex-col items-center justify-center gap-3 group">
-                                <div className="p-3 bg-white/20 rounded-full group-hover:scale-110 transition"><CreditCard size={32}/></div>
-                                <span className="font-bold text-lg">Carteirinha Digital</span>
-                            </Link>
+                            <Link to={`/boletim/aluno/${dadosAlunoLogado.id}`} className="bg-blue-600 hover:bg-blue-700 text-white p-6 rounded-xl shadow-md transition flex flex-col items-center justify-center gap-3 group hover:-translate-y-1"><div className="p-3 bg-white/20 rounded-full group-hover:scale-110 transition"><FileText size={32}/></div><span className="font-bold text-lg">Boletim Escolar</span></Link>
+                            <Link to={`/tarefas/aluno/${dadosAlunoLogado.id}`} className="bg-yellow-500 hover:bg-yellow-600 text-white p-6 rounded-xl shadow-md transition flex flex-col items-center justify-center gap-3 group hover:-translate-y-1"><div className="p-3 bg-white/20 rounded-full group-hover:scale-110 transition"><BookOpen size={32}/></div><span className="font-bold text-lg">Minhas Tarefas</span></Link>
+                            <Link to={`/grade?turma=${encodeURIComponent(dadosAlunoLogado.turma)}`} className="bg-indigo-500 hover:bg-indigo-600 text-white p-6 rounded-xl shadow-md transition flex flex-col items-center justify-center gap-3 group hover:-translate-y-1"><div className="p-3 bg-white/20 rounded-full group-hover:scale-110 transition"><Calendar size={32}/></div><span className="font-bold text-lg">Grade Horária</span></Link>
+                            <Link to={`/frequencia/aluno/${dadosAlunoLogado.id}`} className="bg-green-600 hover:bg-green-700 text-white p-6 rounded-xl shadow-md transition flex flex-col items-center justify-center gap-3 group hover:-translate-y-1"><div className="p-3 bg-white/20 rounded-full group-hover:scale-110 transition"><CalendarDays size={32}/></div><span className="font-bold text-lg">Frequência</span></Link>
+                            <Link to="/minha-carteirinha" className="col-span-1 sm:col-span-2 bg-slate-700 hover:bg-slate-800 text-white p-4 rounded-xl shadow-md transition flex items-center justify-center gap-3 group hover:-translate-y-1"><CreditCard size={24}/> <span className="font-bold">Carteirinha Digital</span></Link>
                         </div>
-
-                        {/* MURAL E NOTIFICAÇÕES (Direita) */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
                             <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2"><Megaphone size={20} className="text-orange-500"/> Mural de Avisos</h3>
                             <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar max-h-[400px]">
-                                {avisos.length === 0 ? (
-                                    <p className="text-gray-400 text-sm text-center py-10">Sem novos avisos.</p>
-                                ) : (
-                                    avisos.map(aviso => (
-                                        <div key={aviso.id} className="p-3 bg-orange-50 border-l-4 border-orange-400 rounded-r-lg">
-                                            <h4 className="font-bold text-sm text-gray-800">{aviso.titulo}</h4>
-                                            <p className="text-xs text-gray-600 mt-1 line-clamp-3">{aviso.mensagem}</p>
-                                            <span className="text-[10px] text-gray-400 mt-2 block">{new Date(aviso.dataPostagem).toLocaleDateString()}</span>
-                                        </div>
-                                    ))
-                                )}
+                                {avisos.length === 0 ? <p className="text-gray-400 text-sm text-center py-10">Sem avisos.</p> : avisos.map(aviso => (<div key={aviso.id} className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-r-lg"><h4 className="font-bold text-sm text-gray-800">{aviso.titulo}</h4><p className="text-xs text-gray-600 mt-1 line-clamp-3">{aviso.mensagem}</p></div>))}
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         );
     }
 
-    // --- DASHBOARD PADRÃO (Diretor, Staff, Pais) ---
+    // --- DASHBOARD PADRÃO ---
     return (
         <div className="flex h-screen bg-gray-50 font-sans">
             <Sidebar />
@@ -208,7 +209,7 @@ function Dashboard() {
 
                 <div className={`grid gap-8 ${isStaff ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 max-w-4xl mx-auto'}`}>
 
-                    {/* LISTA DE ALUNOS / FILHOS */}
+                    {/* LISTA DE ALUNOS */}
                     <div className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[600px] ${isStaff ? 'lg:col-span-1' : 'col-span-3 lg:col-span-2'}`}>
 
                         {isStaff ? (
@@ -230,7 +231,8 @@ function Dashboard() {
                                         <Search className="absolute left-3 top-3 text-gray-400" size={16} />
                                         <input type="text" placeholder="Buscar aluno..." value={busca} onChange={(e) => setBusca(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50 focus:bg-white" />
                                     </div>
-                                    <ul>{alunosFiltrados.length > 0 && alunosFiltrados.map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} />)}</ul>
+                                    {/* PASSA A PROP isAdmin PARA O COMPONENTE */}
+                                    <ul>{alunosFiltrados.length > 0 && alunosFiltrados.map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} isAdmin={isAdmin} />)}</ul>
                                 </div>
                             )}
 
@@ -242,7 +244,7 @@ function Dashboard() {
                                                 <span className="font-bold text-gray-700 text-sm group-hover:text-blue-600 transition">{turma}</span>
                                                 <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-lg group-hover:bg-blue-100 group-hover:text-blue-600 transition">{turmasAgrupadas[turma].length} alunos {turmaAberta === turma ? '▲' : '▼'}</span>
                                             </button>
-                                            {turmaAberta === turma && <ul className="bg-gray-50 border-t border-gray-100 shadow-inner">{turmasAgrupadas[turma].map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} />)}</ul>}
+                                            {turmaAberta === turma && <ul className="bg-gray-50 border-t border-gray-100 shadow-inner">{turmasAgrupadas[turma].map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} isAdmin={isAdmin} />)}</ul>}
                                         </div>
                                     ))}
                                 </div>
@@ -250,7 +252,7 @@ function Dashboard() {
 
                             {isParent && (
                                 <ul className="divide-y divide-gray-100">
-                                    {alunosVisiveis.length > 0 ? alunosVisiveis.map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} />) : <li className="text-center py-10 text-gray-400 flex flex-col items-center gap-2"><Users size={32} className="opacity-20" /><span>Nenhum estudante vinculado.</span></li>}
+                                    {alunosVisiveis.length > 0 ? alunosVisiveis.map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} isAdmin={false} />) : <li className="text-center py-10 text-gray-400 flex flex-col items-center gap-2"><Users size={32} className="opacity-20" /><span>Nenhum estudante vinculado.</span></li>}
                                 </ul>
                             )}
                         </div>
@@ -274,7 +276,7 @@ function Dashboard() {
                                                 </div>
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide border ${oc.tipo === 'AGRESSAO' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>{oc.tipo}</span>
                                             </div>
-                                            <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-50 italic">"{oc.descricao}"</p>
+                                            <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-2 rounded border border-gray-50 italic">"{oc.descricao}"</p>
                                             <div className="text-[10px] text-gray-400 mt-2 text-right font-medium flex justify-end items-center gap-1"><CalendarDays size={10} />{new Date(oc.dataCriacao).toLocaleDateString('pt-BR')}</div>
                                         </div>
                                     ))
@@ -282,6 +284,7 @@ function Dashboard() {
                             </div>
                         </div>
                     )}
+
                 </div>
             </div>
         </div>

@@ -36,8 +36,7 @@ public class DataInitializer implements CommandLineRunner {
 
         // 1. USUÁRIOS
         System.out.println("🔄 Verificando usuários...");
-        criarUsuarioSeNaoExistir("diretor", "123456", Usuario.Perfil.ADMIN);
-        criarUsuarioSeNaoExistir("coord", "123456", Usuario.Perfil.COORDENADOR);
+        criarUsuarioSeNaoExistir("coordenacao", "123456", Usuario.Perfil.ADMIN);
         criarUsuarioSeNaoExistir("secretaria", "123456", Usuario.Perfil.SECRETARIA);
         criarUsuarioSeNaoExistir("prof", "123456", Usuario.Perfil.PROFESSOR);
         criarUsuarioSeNaoExistir("pai", "123456", Usuario.Perfil.RESPONSAVEL);
