@@ -26,20 +26,35 @@ public class AlunoService {
 
     public Aluno criar(AlunoDTO dados) {
         Aluno aluno = new Aluno();
+
+        // Dados Aluno
         aluno.setNome(dados.nome());
+        aluno.setDataNascimento(dados.dataNascimento());
+        aluno.setCpf(dados.cpf());
+        aluno.setTelefone(dados.telefone());
+        aluno.setEndereco(dados.endereco());
+
+        // Dados Responsável
+        aluno.setNomeResponsavel(dados.nomeResponsavel());
+        aluno.setCpfResponsavel(dados.cpfResponsavel());
+        aluno.setTelefoneResponsavel(dados.telefoneResponsavel());
+        aluno.setEmailResponsavel(dados.emailResponsavel());
+
+        // Dados Escolares
+        aluno.setEscola(dados.escola());
+        aluno.setSerie(dados.serie());
         aluno.setTurma(dados.turma());
+        aluno.setDataMatricula(dados.dataMatricula());
         aluno.setMatricula(dados.matricula());
-        // Se vier status, usa. Se não, usa o padrão (ATIVO)
+
         if (dados.situacao() != null) {
             aluno.setSituacao(dados.situacao());
         }
+
         return repository.save(aluno);
     }
 
-    // Lógica para atualizar status
-    public Aluno atualizarStatus(Long id, SituacaoMatricula novaSituacao) {
-        Aluno aluno = buscarPorId(id);
-        aluno.setSituacao(novaSituacao);
-        return repository.save(aluno);
+    public Aluno atualizarStatus(Long id, SituacaoMatricula situacao) {
+        return null;
     }
 }

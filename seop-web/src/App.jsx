@@ -17,7 +17,8 @@ import VisualizarTarefas from './pages/VisualizarTarefas';
 import GradeHoraria from './pages/GradeHoraria';
 import Matricula from './pages/Matricula';
 import Avisos from './pages/Avisos';
-import MinhaCarteirinha from './pages/MinhaCarteirinha'; // <--- IMPORT NOVO
+import MinhaCarteirinha from './pages/MinhaCarteirinha';
+import Perfil from './pages/Perfil';
 
 // O Porteiro (Rota Privada)
 function PrivateRoute({ children }) {
@@ -59,6 +60,7 @@ function App() {
                         <Route path="/chamada" element={<PrivateRoute><Chamada /></PrivateRoute>} />
                         <Route path="/desempenho" element={<PrivateRoute><Desempenho /></PrivateRoute>} />
                         <Route path="/nova-ocorrencia" element={<PrivateRoute><NovaOcorrencia /></PrivateRoute>} />
+                        <Route path="/perfil" element={<PrivateRoute><Perfil /></PrivateRoute>} />
 
                         {/* Rotas de Visualização Específicas (Com ID do Aluno) */}
                         <Route path="/tarefas/aluno/:alunoId" element={<PrivateRoute><VisualizarTarefas /></PrivateRoute>} />

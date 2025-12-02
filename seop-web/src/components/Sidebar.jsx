@@ -74,17 +74,20 @@ export function Sidebar() {
                 )}
             </nav>
 
-            {/* RODAPÉ */}
+            {/* RODAPÉ USER (Clicável agora) */}
             <div className="p-6 border-t border-slate-800 bg-[#020617]">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm border-2 border-slate-800">
+
+                {/* Link para o Perfil */}
+                <Link to="/perfil" className="flex items-center gap-3 mb-4 p-2 -mx-2 rounded-lg hover:bg-white/5 transition group cursor-pointer">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm shadow-lg border-2 border-slate-800 group-hover:border-blue-400 transition">
                         {user?.login?.substring(0,2).toUpperCase()}
                     </div>
                     <div className="overflow-hidden">
-                        <p className="text-sm font-bold truncate text-slate-200">{user?.login}</p>
-                        <p className="text-[10px] text-slate-500 truncate uppercase font-bold tracking-wider">{user?.role}</p>
+                        <p className="text-sm font-bold truncate text-slate-200 group-hover:text-white">{user?.login}</p>
+                        <p className="text-[10px] text-slate-500 truncate uppercase font-bold tracking-wider">Meu Perfil</p>
                     </div>
-                </div>
+                </Link>
+
                 <button onClick={signOut} className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-800 hover:bg-red-500/10 hover:text-red-400 text-slate-400 rounded-lg text-xs font-bold transition border border-slate-700 hover:border-red-500/50">
                     <LogOut size={16} /> ENCERRAR SESSÃO
                 </button>

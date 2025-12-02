@@ -12,15 +12,14 @@ export function AuthProvider({ children }) {
             const token = localStorage.getItem("seop_token");
             const login = localStorage.getItem("seop_user");
             const role = localStorage.getItem("seop_role");
+            const id = localStorage.getItem("seop_id"); // <--- RECUPERA O ID
 
-            if (token && login) {
+            if (token && login && id) {
                 api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-                setUser({ login, role });
+                setUser({ login, role, id }); // <--- SALVA O ID NO ESTADO
             }
-
             setLoading(false);
         }
-
         loadStorageData();
     }, []);
 
@@ -28,14 +27,16 @@ export function AuthProvider({ children }) {
         try {
             const response = await api.post("/login", { login, senha });
 
-            const { token, role } = response.data;
+            // AGORA RECEBEMOS O ID DO BACKEND
+            const { token, role, id } = response.data;
 
             localStorage.setItem("seop_token", token);
             localStorage.setItem("seop_user", login);
             localStorage.setItem("seop_role", role);
+            localStorage.setItem("seop_id", id); // <--- SALVA O ID NO NAVEGADOR
 
             api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            setUser({ login, role });
+            setUser({ login, role, id }); // <--- ATUALIZA O USUÁRIO COM ID
 
         } catch (error) {
             throw error;

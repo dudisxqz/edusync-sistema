@@ -1,12 +1,12 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
-// Importando ícones
 import { Eye, EyeOff, User, Lock, Loader2 } from 'lucide-react';
 
 function Login() {
     const { signIn, signed } = useContext(AuthContext);
 
+    // CAMPOS VAZIOS POR PADRÃO (Mais profissional)
     const [login, setLogin] = useState('');
     const [senha, setSenha] = useState('');
 
@@ -37,9 +37,7 @@ function Login() {
             <div className="max-w-md w-full bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200">
                 <div className="px-8 py-10">
                     <div className="text-center mb-8">
-                        <h1 className="text-4xl font-extrabold text-primary-dark tracking-tight flex justify-center items-center gap-2">
-                            EduSync
-                        </h1>
+                        <h1 className="text-4xl font-extrabold text-primary-dark tracking-tight">EduSync</h1>
                         <p className="text-sm text-gray-500 mt-2 font-medium">Portal de Gestão Escolar Inteligente</p>
                     </div>
 
@@ -98,7 +96,7 @@ function Login() {
                             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-primary-dark hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed items-center gap-2"
                             disabled={loading}
                         >
-                            {loading ? <Loader2 className="animate-spin" size={20} /> : "ENTRAR"}
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : "ACESSAR O PORTAL"}
                         </button>
                     </form>
                 </div>
