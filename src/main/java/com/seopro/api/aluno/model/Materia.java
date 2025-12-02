@@ -7,5 +7,6 @@ public enum Materia {
     GEOGRAFIA,
     CIENCIAS,
     INGLES,
-    EDUCACAO_FISICA
+    EDUCACAO_FISICA,
+    ARTE
 }

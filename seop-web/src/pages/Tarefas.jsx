@@ -1,86 +1,81 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
-import { ArrowLeft, BookOpen, Clock, CheckCircle } from 'lucide-react';
+import { AuthContext } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
+import { Sidebar } from '../components/Sidebar'; // <--- Usa a Sidebar direto
+import { BookOpen, Clock, Save, PlusCircle, Trash2 } from 'lucide-react';
 
 function Tarefas() {
+    const { user } = useContext(AuthContext);
+    const { addToast } = useToast();
     const [tarefas, setTarefas] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        async function carregarTarefas() {
-            try {
-                // Busca todas as tarefas (num app real, filtraria pela turma do aluno)
-                const resp = await api.get('/tarefas');
-                setTarefas(resp.data || []);
-            } catch (error) {
-                console.error("Erro ao carregar tarefas:", error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        carregarTarefas();
-    }, []);
+    const [titulo, setTitulo] = useState('');
+    const [descricao, setDescricao] = useState('');
+    const [dataEntrega, setDataEntrega] = useState('');
+    const [turma, setTurma] = useState('3º Ano A');
+    const [materia, setMateria] = useState('MATEMATICA');
 
-    if (loading) return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center text-gray-500">
-            Carregando atividades...
-        </div>
-    );
+    const isStaff = ['ADMIN', 'PROFESSOR', 'COORDENADOR'].includes(user?.role);
+
+    useEffect(() => { carregarTarefas(); }, []);
+
+    async function carregarTarefas() {
+        try { const resp = await api.get('/tarefas'); setTarefas(resp.data || []); } catch (e) { console.error(e); } finally { setLoading(false); }
+    }
+
+    async function handleCriar(e) {
+        e.preventDefault();
+        try { await api.post('/tarefas', { titulo, descricao, dataEntrega, turma, materia }); addToast("Criada!", "success"); setTitulo(''); setDescricao(''); setDataEntrega(''); carregarTarefas(); } catch { addToast("Erro.", "error"); }
+    }
 
     return (
-        <div className="min-h-screen bg-gray-100 font-sans pb-10">
-            {/* NAVBAR */}
-            <nav className="bg-primary-dark text-white shadow-md sticky top-0 z-50">
-                <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <h2 className="text-lg font-bold flex items-center gap-2 tracking-wide">
-                        <BookOpen size={24} className="text-yellow-400" /> Atividades & Tarefas
-                    </h2>
-                    <Link to="/">
-                        <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold transition flex items-center gap-2 border border-white/20">
-                            <ArrowLeft size={16} /> Voltar
-                        </button>
-                    </Link>
-                </div>
-            </nav>
+        <div className="flex h-screen bg-gray-50 font-sans">
+            <Sidebar />
+            <div className="flex-1 md:ml-64 p-8 overflow-y-auto h-full">
+                <header className="mb-8">
+                    <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                        <BookOpen className="text-yellow-500" size={32} /> Gestão de Tarefas (AVA)
+                    </h1>
+                    <p className="text-gray-500 mt-2 font-medium">Acompanhe e publique atividades para as turmas.</p>
+                </header>
 
-            <div className="max-w-4xl mx-auto px-4 py-8">
-
-                {tarefas.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400">
-                        <p>Nenhuma tarefa pendente. 🎉</p>
-                    </div>
-                ) : (
-                    <div className="grid gap-4">
-                        {tarefas.map(tarefa => (
-                            <div key={tarefa.id} className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-400 hover:shadow-md transition">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-bold text-lg text-gray-800">{tarefa.titulo}</h3>
-                                    <span className="text-xs font-bold px-2 py-1 bg-gray-100 text-gray-600 rounded uppercase">
-                                {tarefa.materia}
-                            </span>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {isStaff && (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-fit">
+                            <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2"><PlusCircle size={18} className="text-blue-600"/> Nova Atividade</h3>
+                            <form onSubmit={handleCriar} className="space-y-4">
+                                <input type="text" placeholder="Título" value={titulo} onChange={e=>setTitulo(e.target.value)} className="w-full p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500" required />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <select value={turma} onChange={e=>setTurma(e.target.value)} className="w-full p-2 border rounded-lg text-sm bg-white"><option>3º Ano A</option><option>2º Ano B</option></select>
+                                    <select value={materia} onChange={e=>setMateria(e.target.value)} className="w-full p-2 border rounded-lg text-sm bg-white"><option>MATEMATICA</option><option>PORTUGUES</option><option>HISTORIA</option></select>
                                 </div>
+                                <input type="date" value={dataEntrega} onChange={e=>setDataEntrega(e.target.value)} className="w-full p-2 border rounded-lg text-sm" required />
+                                <textarea rows="3" placeholder="Descrição..." value={descricao} onChange={e=>setDescricao(e.target.value)} className="w-full p-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                                <button type="submit" className="w-full py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition text-sm">Publicar</button>
+                            </form>
+                        </div>
+                    )}
 
-                                <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                                    {tarefa.descricao}
-                                </p>
-
-                                <div className="flex items-center justify-between text-xs border-t border-gray-100 pt-4">
-                                    <div className="flex items-center gap-2 text-orange-600 font-semibold">
-                                        <Clock size={14} />
-                                        <span>Entrega: {new Date(tarefa.dataEntrega).toLocaleDateString('pt-BR')}</span>
-                                    </div>
-                                    <div className="text-gray-400 font-medium">
-                                        Turma: {tarefa.turma}
-                                    </div>
+                    <div className={`${isStaff ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-4`}>
+                        {tarefas.map(t => (
+                            <div key={t.id} className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-yellow-400 hover:shadow-md transition">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h4 className="font-bold text-gray-800">{t.titulo}</h4>
+                                    <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded uppercase">{t.materia} • {t.turma}</span>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-4">{t.descricao}</p>
+                                <div className="flex items-center gap-2 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded w-fit">
+                                    <Clock size={14}/> Entrega: {new Date(t.dataEntrega).toLocaleDateString()}
                                 </div>
                             </div>
                         ))}
+                        {tarefas.length === 0 && <div className="text-center py-20 text-gray-400">Nenhuma tarefa pendente.</div>}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );
 }
-
 export default Tarefas;

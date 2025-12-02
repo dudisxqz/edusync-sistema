@@ -14,7 +14,10 @@ import VisualizarBoletim from './pages/VisualizarBoletim';
 import VisualizarDeclaracao from './pages/VisualizarDeclaracao';
 import Tarefas from './pages/Tarefas';
 import VisualizarTarefas from './pages/VisualizarTarefas';
+import GradeHoraria from './pages/GradeHoraria';
 import Matricula from './pages/Matricula';
+import Avisos from './pages/Avisos';
+import MinhaCarteirinha from './pages/MinhaCarteirinha'; // <--- IMPORT NOVO
 
 // O Porteiro (Rota Privada)
 function PrivateRoute({ children }) {
@@ -44,24 +47,24 @@ function App() {
                         {/* Rota Pública */}
                         <Route path="/login" element={<Login />} />
 
-                        {/* Rotas Privadas */}
+                        {/* Rotas Privadas Gerais */}
                         <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-                        <Route path="/nova-ocorrencia" element={<PrivateRoute><NovaOcorrencia /></PrivateRoute>} />
-                        <Route path="/desempenho" element={<PrivateRoute><Desempenho /></PrivateRoute>} />
-                        <Route path="/chamada" element={<PrivateRoute><Chamada /></PrivateRoute>} />
-                        <Route path="/tarefas" element={<PrivateRoute><Tarefas /></PrivateRoute>} />
+                        <Route path="/avisos" element={<PrivateRoute><Avisos /></PrivateRoute>} />
+                        <Route path="/minha-carteirinha" element={<PrivateRoute><MinhaCarteirinha /></PrivateRoute>} /> {/* <--- ROTA NOVA */}
+
+                        {/* Rotas de Gestão (Staff) */}
                         <Route path="/matricula" element={<PrivateRoute><Matricula /></PrivateRoute>} />
+                        <Route path="/grade" element={<PrivateRoute><GradeHoraria /></PrivateRoute>} />
+                        <Route path="/tarefas" element={<PrivateRoute><Tarefas /></PrivateRoute>} />
+                        <Route path="/chamada" element={<PrivateRoute><Chamada /></PrivateRoute>} />
+                        <Route path="/desempenho" element={<PrivateRoute><Desempenho /></PrivateRoute>} />
+                        <Route path="/nova-ocorrencia" element={<PrivateRoute><NovaOcorrencia /></PrivateRoute>} />
 
-
-                        {/* Rotas de Visualização (Com ID) */}
+                        {/* Rotas de Visualização Específicas (Com ID do Aluno) */}
+                        <Route path="/tarefas/aluno/:alunoId" element={<PrivateRoute><VisualizarTarefas /></PrivateRoute>} />
                         <Route path="/frequencia/aluno/:alunoId" element={<PrivateRoute><VisualizarFrequencia /></PrivateRoute>} />
                         <Route path="/boletim/aluno/:alunoId" element={<PrivateRoute><VisualizarBoletim /></PrivateRoute>} />
-
-                        {/* NOVA ROTA DA DECLARAÇÃO 👇 */}
                         <Route path="/declaracao/aluno/:alunoId" element={<PrivateRoute><VisualizarDeclaracao /></PrivateRoute>} />
-
-                        {/* ROTA NOVA: Visualizar Tarefas por Aluno */}
-                        <Route path="/tarefas/aluno/:alunoId" element={<PrivateRoute><VisualizarTarefas /></PrivateRoute>} />
                     </Routes>
                 </BrowserRouter>
             </AuthProvider>

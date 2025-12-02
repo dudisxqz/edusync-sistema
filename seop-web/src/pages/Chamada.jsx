@@ -1,127 +1,102 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { Sidebar } from '../components/Sidebar';
+import { useToast } from '../contexts/ToastContext';
+import { CalendarDays, Save, CheckCircle2, XCircle, BookOpen, Users } from 'lucide-react';
 
 function Chamada() {
+    const { addToast } = useToast();
     const navigate = useNavigate();
+
     const [alunos, setAlunos] = useState([]);
     const [turmas, setTurmas] = useState([]);
     const [turmaSelecionada, setTurmaSelecionada] = useState('');
     const [dataChamada, setDataChamada] = useState(new Date().toISOString().split('T')[0]);
     const [presencas, setPresencas] = useState({});
+    const [conteudo, setConteudo] = useState('');
+    const [saving, setSaving] = useState(false);
 
+    // 1. Carregar Dados
     useEffect(() => {
-        async function carregar() {
-            try {
-                const resp = await api.get('/alunos');
-                setAlunos(resp.data);
-                const listaTurmas = [...new Set(resp.data.map(a => a.turma))].sort();
-                setTurmas(listaTurmas);
-            } catch (e) { console.error(e); }
-        }
-        carregar();
-    }, []);
+        api.get('/alunos').then(res => {
+            setAlunos(res.data);
+            setTurmas([...new Set(res.data.map(a => a.turma))].sort());
+        }).catch(() => addToast("Erro ao carregar.", "error"));
+    }, [addToast]);
 
+    // 2. Filtrar Alunos (DEPOIS de carregar)
     const alunosDaTurma = alunos.filter(a => a.turma === turmaSelecionada);
 
+    // 3. Inicializar Presenças (Quando a turma muda)
     useEffect(() => {
         if (alunosDaTurma.length > 0) {
             const inicial = {};
             alunosDaTurma.forEach(a => inicial[a.id] = true);
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPresencas(inicial);
         }
-    }, [turmaSelecionada]);
+    }, [turmaSelecionada, alunos]); // Dependências corretas
 
     function togglePresenca(id) {
         setPresencas(prev => ({ ...prev, [id]: !prev[id] }));
     }
 
     async function handleSalvarChamada() {
-        if (!turmaSelecionada) return alert("Selecione uma turma!");
-        const payload = alunosDaTurma.map(aluno => ({ alunoId: aluno.id, data: dataChamada, presente: presencas[aluno.id] }));
+        if (!turmaSelecionada) return addToast("Selecione a turma!", "error");
+        setSaving(true);
         try {
+            const payload = alunosDaTurma.map(a => ({ alunoId: a.id, data: dataChamada, presente: presencas[a.id] }));
             await api.post('/frequencias/lote', payload);
-            alert(`✅ Chamada registrada!`);
+            if(conteudo) await api.post('/diarios', { data: dataChamada, turma: turmaSelecionada, conteudoMinistrado: conteudo });
+            addToast("Chamada salva!", "success");
             navigate('/');
-            // eslint-disable-next-line no-unused-vars
-        } catch (erro) { alert("Erro ao salvar."); }
+        } catch { addToast("Erro ao salvar.", "error"); }
+        finally { setSaving(false); }
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 font-sans">
-            <nav className="bg-primary-dark text-white shadow-md">
-                <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <span className="text-2xl">📅</span>
-                        <h2 className="text-xl font-bold">Registro de Frequência</h2>
+        <div className="flex h-screen bg-gray-50 font-sans">
+            <Sidebar />
+            <div className="flex-1 md:ml-64 p-8 overflow-y-auto h-full">
+                <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><CalendarDays className="text-purple-600"/> Diário de Classe</h1>
+
+                <div className="bg-white p-6 rounded-xl shadow-sm mb-6 grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 block mb-1">TURMA</label>
+                        <select value={turmaSelecionada} onChange={e=>setTurmaSelecionada(e.target.value)} className="w-full p-2 border rounded"><option value="">Selecione...</option>{turmas.map(t=><option key={t}>{t}</option>)}</select>
                     </div>
-                    <Link to="/">
-                        <button className="px-4 py-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg text-sm font-bold transition">Voltar</button>
-                    </Link>
+                    <div>
+                        <label className="text-xs font-bold text-gray-400 block mb-1">DATA</label>
+                        <input type="date" value={dataChamada} onChange={e=>setDataChamada(e.target.value)} className="w-full p-2 border rounded"/>
+                    </div>
                 </div>
-            </nav>
 
-            <div className="max-w-5xl mx-auto px-4 py-8">
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                    <div className="flex flex-col md:flex-row gap-6 border-b border-gray-100 pb-6 mb-6">
-                        <div className="flex-1">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Turma</label>
-                            <select value={turmaSelecionada} onChange={e => setTurmaSelecionada(e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-dark bg-white">
-                                <option value="">-- Selecione a Turma --</option>
-                                {turmas.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
-                        </div>
-                        <div className="flex-1">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Data da Aula</label>
-                            <input type="date" value={dataChamada} onChange={e => setDataChamada(e.target.value)} className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-dark" />
-                        </div>
-                    </div>
-
-                    {turmaSelecionada ? (
-                        <div>
-                            <div className="flex justify-between items-center mb-4 px-2">
-                                <span className="text-sm font-bold text-gray-400 uppercase">Lista de Alunos ({alunosDaTurma.length})</span>
-                                <span className="text-xs text-gray-400">Clique na linha para alterar</span>
-                            </div>
-
-                            <div className="border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-100">
-                                {alunosDaTurma.map(aluno => (
-                                    <div
-                                        key={aluno.id}
-                                        onClick={() => togglePresenca(aluno.id)}
-                                        className={`p-4 flex justify-between items-center cursor-pointer transition duration-150 border-l-4 ${presencas[aluno.id] ? 'bg-white border-l-secondary-green hover:bg-green-50' : 'bg-red-50 border-l-error-red hover:bg-red-100'}`}
-                                    >
-                                        <div className="font-semibold text-gray-800">{aluno.nome}</div>
-
-                                        <div className="flex items-center gap-3">
-                      <span className={`text-xs font-bold px-2 py-1 rounded ${presencas[aluno.id] ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
-                        {presencas[aluno.id] ? 'PRESENTE' : 'AUSENTE'}
-                      </span>
-                                            <div className={`w-6 h-6 rounded border flex items-center justify-center ${presencas[aluno.id] ? 'bg-green-500 border-green-600 text-white' : 'bg-white border-gray-300'}`}>
-                                                {presencas[aluno.id] && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
-                                            </div>
-                                        </div>
+                {turmaSelecionada && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm overflow-hidden">
+                            <div className="p-4 bg-gray-50 border-b font-bold text-gray-700 flex items-center gap-2"><Users size={16}/> Alunos</div>
+                            <div className="max-h-[400px] overflow-y-auto">
+                                {alunosDaTurma.map(a => (
+                                    <div key={a.id} onClick={()=>togglePresenca(a.id)} className={`p-3 flex justify-between items-center cursor-pointer border-b border-gray-50 hover:bg-gray-50 ${!presencas[a.id]?'bg-red-50':''}`}>
+                                        <span className="font-bold text-sm text-gray-700">{a.nome}</span>
+                                        {presencas[a.id] ? <CheckCircle2 className="text-green-500" size={20}/> : <XCircle className="text-red-500" size={20}/>}
                                     </div>
                                 ))}
                             </div>
-
-                            <div className="mt-6 flex justify-end">
-                                <button onClick={handleSalvarChamada} className="px-8 py-3 bg-primary-dark hover:bg-opacity-90 text-white font-bold rounded-lg shadow-lg transition transform hover:-translate-y-0.5">
-                                    💾 Salvar Chamada
-                                </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="bg-white p-4 rounded-xl shadow-sm">
+                                <label className="text-xs font-bold text-gray-400 block mb-2"><BookOpen size={14} className="inline mr-1"/> CONTEÚDO</label>
+                                <textarea value={conteudo} onChange={e=>setConteudo(e.target.value)} className="w-full p-2 border rounded h-32 resize-none text-sm" placeholder="O que foi dado hoje?"></textarea>
                             </div>
+                            <button onClick={handleSalvarChamada} disabled={saving} className="w-full py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition flex justify-center gap-2">
+                                {saving ? "Salvando..." : <><Save size={18}/> Salvar Diário</>}
+                            </button>
                         </div>
-                    ) : (
-                        <div className="text-center py-20 text-gray-400">
-                            <p className="text-4xl mb-4">🏫</p>
-                            <p>Selecione uma turma acima para carregar a lista de alunos.</p>
-                        </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );
 }
-
 export default Chamada;
