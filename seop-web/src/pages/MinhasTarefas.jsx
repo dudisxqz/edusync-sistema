@@ -15,15 +15,12 @@ function MinhasTarefas() {
             try {
                 setLoading(true);
                 const resAlunos = await api.get('/alunos');
-                // Simulação de filtro de filhos
                 const meusFilhos = resAlunos.data.filter(a => a.nome.includes("João") || a.nome.includes("Maria"));
                 setFilhos(meusFilhos);
 
-                // Busca tarefas para cada filho
                 const promises = meusFilhos.map(filho => api.get(`/tarefas/turma/${encodeURIComponent(filho.turma)}`));
                 const resultados = await Promise.all(promises);
 
-                // Combina tarefas com o nome do filho
                 const todasTarefas = resultados.flatMap((r, index) =>
                     r.data.map(t => ({ ...t, alunoNome: meusFilhos[index].nome }))
                 );

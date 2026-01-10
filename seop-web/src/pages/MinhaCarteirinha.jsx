@@ -17,14 +17,9 @@ function MinhaCarteirinha() {
 
                 let filtrados = [];
 
-                // LÓGICA DE FILTRO POR PERFIL
                 if (user?.role === 'ALUNO') {
-                    // Se for aluno, mostra apenas ele mesmo (baseado no login ou nome)
-                    // Como o login do aluno é 'aluno', vamos simular que ele é o João Silva para demonstração
-                    // Em produção: filtraria pelo ID do usuário vinculado ao aluno
                     filtrados = res.data.filter(a => a.nome.toLowerCase().includes("joão"));
                 } else {
-                    // Se for pai/responsável, mostra os filhos (João e Maria)
                     filtrados = res.data.filter(a => a.nome.includes("João") || a.nome.includes("Maria"));
                 }
 
@@ -56,7 +51,6 @@ function MinhaCarteirinha() {
                         {meusAlunos.length > 0 ? (
                             meusAlunos.map(aluno => (
                                 <div key={aluno.id} className="transform transition hover:scale-105 duration-300">
-                                    {/* CARTÃO DIGITAL */}
                                     <div className="bg-white rounded-2xl overflow-hidden shadow-2xl w-[300px] border border-gray-200 relative">
 
                                         <div className="bg-[#003366] p-6 text-center relative h-40">

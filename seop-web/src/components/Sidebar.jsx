@@ -12,7 +12,7 @@ export function Sidebar() {
 
     const role = user?.role;
     const isStaff = ['ADMIN', 'SECRETARIA', 'PROFESSOR'].includes(role);
-    const isAdmin = role === 'ADMIN'; // Só ADMIN vê configurações
+    const isAdmin = role === 'ADMIN';
     const isSecretaria = ['ADMIN', 'SECRETARIA'].includes(role);
     const isParent = ['RESPONSAVEL', 'ALUNO'].includes(role);
 

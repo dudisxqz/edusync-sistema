@@ -7,9 +7,7 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
     const safeNotas = notas || [];
     const safeFreq = frequencias || [];
 
-    // --- CÁLCULO DE FALTAS ---
-    // Filtra apenas as faltas (presente == false) para este aluno específico (já filtrado pela API, mas garantindo)
-    // Nota: Como o endpoint da API já traz as faltas DO ALUNO, basta contar quantos false tem.
+
     const totalFaltasGeral = safeFreq.filter(f => f.presente === false).length;
 
     const getNota = (materia, bim) => {
@@ -32,7 +30,6 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
 
     return (
         <div ref={ref} style={styles.page}>
-            {/* CABEÇALHO */}
             <div style={styles.header}>
                 <div style={{fontSize:'10px', fontWeight:'bold', textTransform:'uppercase'}}>Secretaria de Estado da Educação</div>
                 <h1 style={{margin: '5px 0', fontSize: '16px', color: '#003366', textTransform:'uppercase'}}>Governo do Estado de Rondônia</h1>
@@ -41,7 +38,6 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
                 </div>
             </div>
 
-            {/* DADOS */}
             <div style={styles.infoBox}>
                 <div style={styles.row}>
                     <div style={styles.col}><strong>Escola:</strong> EEEM MAJOR GUAPINDAIA</div>
@@ -57,7 +53,6 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
                 </div>
             </div>
 
-            {/* TABELA */}
             <table style={styles.table}>
                 <thead>
                 <tr style={{background: '#f0f0f0'}}>
@@ -83,11 +78,9 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
                 </tbody>
             </table>
 
-            {/* RODAPÉ STATUS */}
             <div style={{marginTop:'10px', border:'1px solid #999', padding:'5px', display:'flex', justifyContent:'space-between', fontSize:'11px', fontWeight:'bold', background: '#f9f9f9'}}>
                 <div>Situação da Turma: FECHADA</div>
 
-                {/* EXIBINDO FALTAS AQUI */}
                 <div style={{color: totalFaltasGeral > 10 ? 'red' : 'black'}}>
                     Total de Faltas Registradas: {totalFaltasGeral}
                 </div>
@@ -95,7 +88,6 @@ export const Boletim = React.forwardRef(({ aluno, notas, frequencias, relatorioI
                 <div>Situação: <span style={{color:'green'}}>CURSANDO</span></div>
             </div>
 
-            {/* PARECER IA */}
             {relatorioIA && (
                 <div style={{marginTop: '20px', border:'1px solid #999', padding:'10px'}}>
                     <h4 style={{margin:'0 0 10px 0', fontSize:'12px', textTransform:'uppercase', borderBottom:'1px solid #eee', paddingBottom:'5px'}}>

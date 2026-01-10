@@ -8,19 +8,16 @@ export const Carteirinha = ({ aluno, fechar }) => {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] p-4 backdrop-blur-sm" onClick={fechar}>
             <div className="bg-white rounded-2xl overflow-hidden shadow-2xl w-full max-w-xs transform transition-all scale-100" onClick={e => e.stopPropagation()}>
 
-                {/* Topo Azul */}
                 <div className="bg-[#003366] p-6 text-center relative">
                     <h2 className="text-white font-bold text-lg tracking-wider">EduSync</h2>
                     <p className="text-blue-200 text-xs uppercase tracking-widest mt-1">Carteira Estudantil</p>
                     <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
                         <div className="w-20 h-20 bg-gray-200 rounded-full border-4 border-white flex items-center justify-center text-2xl font-bold text-gray-400">
-                            {/* Foto Fake */}
                             {aluno.nome[0]}
                         </div>
                     </div>
                 </div>
 
-                {/* Dados */}
                 <div className="pt-12 pb-6 px-6 text-center">
                     <h3 className="font-bold text-xl text-gray-800 leading-tight">{aluno.nome}</h3>
                     <p className="text-sm text-gray-500 mt-1">{aluno.turma}</p>
@@ -40,7 +37,6 @@ export const Carteirinha = ({ aluno, fechar }) => {
                         </div>
                     </div>
 
-                    {/* QR Code Falso para visual */}
                     <div className="mt-6 flex flex-col items-center justify-center">
                         <QrCode size={64} className="text-gray-800" />
                         <p className="text-[10px] text-gray-400 mt-2">Uso exclusivo para identificação escolar.</p>

@@ -9,7 +9,6 @@ import {
     UserPlus, Calendar, Megaphone, CreditCard, Clock
 } from 'lucide-react';
 
-// --- COMPONENTE: CARD KPI ---
 const KPICard = ({ title, value, desc, color, icon: Icon }) => {
     const styles = {
         blue: { border: 'border-blue-600', text: 'text-blue-600', bg: 'bg-blue-50' },
@@ -32,8 +31,6 @@ const KPICard = ({ title, value, desc, color, icon: Icon }) => {
     );
 };
 
-// --- COMPONENTE: LINHA DO ALUNO ---
-// Agora recebe a prop 'isAdmin' para esconder botões extras
 const LinhaAluno = ({ aluno, isAdmin }) => (
     <li className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition duration-150">
         <div className="p-4">
@@ -51,23 +48,19 @@ const LinhaAluno = ({ aluno, isAdmin }) => (
                 </div>
             </div>
 
-            {/* GRID DE BOTÕES (Adaptável) */}
             <div className={`grid gap-2 ${isAdmin ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'}`}>
-                {/* Boletim (Sempre visível) */}
                 <Link to={`/boletim/aluno/${aluno.id}`}>
                     <button className="w-full flex justify-center items-center py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full">
                         <FileText size={12} /> <span>Boletim</span>
                     </button>
                 </Link>
 
-                {/* Frequência (Sempre visível) */}
                 <Link to={`/frequencia/aluno/${aluno.id}`}>
                     <button className="w-full flex justify-center items-center py-1.5 bg-secondary-green hover:bg-green-700 text-white text-[10px] font-bold rounded shadow-sm transition active:scale-95 gap-1 uppercase tracking-wide h-full">
                         <CalendarDays size={12} /> <span>Freq.</span>
                     </button>
                 </Link>
 
-                {/* Botões Extras (Ocultos para Coordenação/Admin, pois já estão no menu) */}
                 {!isAdmin && (
                     <>
                         <Link to={`/declaracao/aluno/${aluno.id}`}>
@@ -121,7 +114,7 @@ function Dashboard() {
 
     const role = user?.role;
     const isStaff = ['ADMIN', 'COORDENADOR', 'SECRETARIA', 'PROFESSOR'].includes(role);
-    const isAdmin = role === 'ADMIN' || role === 'SECRETARIA'; // Coordenação ou Secretaria
+    const isAdmin = role === 'ADMIN' || role === 'SECRETARIA';
     const isParent = role === 'RESPONSAVEL';
     const isStudent = role === 'ALUNO';
 
@@ -148,10 +141,8 @@ function Dashboard() {
 
     if (loading) return <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">Carregando...</div>;
 
-    // --- DASHBOARD ALUNO ---
     if (isStudent && dadosAlunoLogado) {
-        // ... (Código do Dashboard do Aluno mantido igual, vou omitir para economizar espaço, mas mantenha ele aqui!) ...
-        // Se precisar, copio de novo, mas é o mesmo do bloco anterior.
+
         return (
             <div className="flex h-screen bg-gray-50 font-sans">
                 <Sidebar />
@@ -186,7 +177,6 @@ function Dashboard() {
         );
     }
 
-    // --- DASHBOARD PADRÃO ---
     return (
         <div className="flex h-screen bg-gray-50 font-sans">
             <Sidebar />
@@ -209,7 +199,6 @@ function Dashboard() {
 
                 <div className={`grid gap-8 ${isStaff ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 max-w-4xl mx-auto'}`}>
 
-                    {/* LISTA DE ALUNOS */}
                     <div className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[600px] ${isStaff ? 'lg:col-span-1' : 'col-span-3 lg:col-span-2'}`}>
 
                         {isStaff ? (
@@ -231,7 +220,6 @@ function Dashboard() {
                                         <Search className="absolute left-3 top-3 text-gray-400" size={16} />
                                         <input type="text" placeholder="Buscar aluno..." value={busca} onChange={(e) => setBusca(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50 focus:bg-white" />
                                     </div>
-                                    {/* PASSA A PROP isAdmin PARA O COMPONENTE */}
                                     <ul>{alunosFiltrados.length > 0 && alunosFiltrados.map(aluno => <LinhaAluno key={aluno.id} aluno={aluno} isAdmin={isAdmin} />)}</ul>
                                 </div>
                             )}

@@ -27,14 +27,12 @@ function Perfil() {
         async function carregarDados() {
             if (user?.role === 'ALUNO') {
                 try {
-                    // Tenta buscar dados específicos do aluno
-                    // Como o backend faz uma busca por nome, isso deve funcionar para 'joao'
+
                     const idUsuario = user.id || localStorage.getItem("seop_id");
                     if (idUsuario) {
                         const res = await api.get(`/usuarios/${idUsuario}/dados-pessoais`);
                         setDadosAluno(res.data);
                     }
-                    // eslint-disable-next-line no-unused-vars
                 } catch (error) {
                     console.log("Não foi possível carregar dados detalhados.");
                 }
@@ -85,9 +83,8 @@ function Perfil() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                        {/* COLUNA ESQUERDA: IDENTIFICAÇÃO + DADOS PESSOAIS (SE FOR ALUNO) */}
                         <div className="space-y-6">
-                            {/* CARD BÁSICO */}
+
                             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center text-center">
                                 <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center text-5xl font-bold text-blue-600 mb-6 border-4 border-white shadow-lg">
                                     {user?.login?.charAt(0).toUpperCase()}
@@ -101,7 +98,6 @@ function Perfil() {
                                 </div>
                             </div>
 
-                            {/* CARD DE DADOS COMPLETOS (SÓ PARA ALUNO) */}
                             {user?.role === 'ALUNO' && dadosAluno && (
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
                                     <h3 className="text-sm font-bold text-gray-400 uppercase mb-4 tracking-wider flex items-center gap-2">
@@ -139,7 +135,6 @@ function Perfil() {
                             )}
                         </div>
 
-                        {/* COLUNA DIREITA: FORMULÁRIO DE SENHA */}
                         <div className="lg:col-span-2">
                             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 h-fit">
                                 <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-100">
@@ -151,7 +146,6 @@ function Perfil() {
                                 </div>
 
                                 <form onSubmit={handleTrocarSenha} className="space-y-6">
-                                    {/* Campos de senha (mantidos iguais, só layout ajustado) */}
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Senha Atual</label>
                                         <div className="relative">

@@ -3,7 +3,6 @@ import { AuthProvider, AuthContext } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { useContext } from 'react';
 
-// IMPORTS
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import NovaOcorrencia from './pages/NovaOcorrencia';

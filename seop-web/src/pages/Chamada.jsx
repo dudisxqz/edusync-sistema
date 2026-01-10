@@ -31,7 +31,6 @@ function Chamada() {
         carregar();
     }, [addToast]);
 
-    // Esta variável deve ser calculada em cada render
     const alunosDaTurma = alunos.filter(a => a.turma === turmaSelecionada);
 
     useEffect(() => {
@@ -40,7 +39,7 @@ function Chamada() {
             alunosDaTurma.forEach(a => inicial[a.id] = true);
             setPresencas(inicial);
         }
-    }, [turmaSelecionada, alunos]); // Corrigido dependências
+    }, [turmaSelecionada, alunos]); 
 
     function togglePresenca(id) {
         setPresencas(prev => ({ ...prev, [id]: !prev[id] }));

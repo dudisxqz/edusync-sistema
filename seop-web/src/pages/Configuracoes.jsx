@@ -12,7 +12,6 @@ function Configuracoes() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
 
-    // Estados do Formulário
     const [anoLetivo, setAnoLetivo] = useState(2025);
     const [periodos, setPeriodos] = useState({ p1: '', p2: '', p3: '', p4: '' });
     const [iaHabilitada, setIaHabilitada] = useState(true);
@@ -76,7 +75,6 @@ function Configuracoes() {
 
                 <form onSubmit={handleSalvar} className="max-w-4xl space-y-6">
 
-                    {/* ANO LETIVO */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                         <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <Calendar size={20} className="text-blue-600"/> Definição do Ano Letivo
@@ -92,7 +90,6 @@ function Configuracoes() {
                         </div>
                     </div>
 
-                    {/* PERÍODOS */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                         <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <ListOrdered size={20} className="text-blue-600"/> Períodos Avaliativos
@@ -112,7 +109,6 @@ function Configuracoes() {
                         </div>
                     </div>
 
-                    {/* IA PEDAGÓGICA */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                         <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <Bot size={20} className="text-purple-600"/> Controle de IA Pedagógica

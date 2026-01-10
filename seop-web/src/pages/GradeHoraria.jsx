@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
-import { Sidebar } from '../components/Sidebar'; // <--- Usa a Sidebar direto
+import { Sidebar } from '../components/Sidebar';
 import { ArrowLeft, Calendar, Clock, Edit3, XCircle } from 'lucide-react';
 
 function GradeHoraria() {
@@ -79,7 +79,6 @@ function GradeHoraria() {
             <Sidebar />
             <div className="flex-1 md:ml-64 p-8 overflow-y-auto h-full">
                 <div className="max-w-7xl mx-auto">
-                    {/* Header */}
                     <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
@@ -90,7 +89,6 @@ function GradeHoraria() {
                             </p>
                         </div>
 
-                        {/* Filtro de Turma */}
                         <div className="flex items-center gap-3 bg-white p-2 rounded-lg shadow-sm border border-gray-200">
                             <span className="text-xs font-bold text-gray-400 uppercase ml-2">TURMA:</span>
 
@@ -112,7 +110,7 @@ function GradeHoraria() {
                         )}
                     </div>
 
-                    {/* Tabela Responsiva */}
+
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         {loading ? (
                             <div className="p-20 text-center text-gray-400">Carregando grade...</div>

@@ -18,7 +18,7 @@ function Login() {
         setErro('');
         try {
             await signIn(login, senha);
-            // eslint-disable-next-line no-unused-vars
+            
         } catch (error) {
             setErro("Credenciais inválidas. Verifique seu login e senha.");
         } finally {
@@ -31,16 +31,13 @@ function Login() {
     return (
         <div className="flex min-h-screen font-sans bg-gray-50">
 
-            {/* --- LADO ESQUERDO: BRANDING & IMAGEM (Aparece só em telas grandes) --- */}
             <div className="hidden lg:flex lg:w-1/2 relative bg-[#0f172a] items-center justify-center overflow-hidden">
-                {/* Imagem de Fundo com Overlay */}
                 <div
                     className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-overlay"
                     style={{ backgroundImage: "url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop')" }} // Imagem de universidade moderna
                 ></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-blue-900/40 to-[#0f172a]"></div>
 
-                {/* Conteúdo de Texto */}
                 <div className="relative z-10 p-12 text-center max-w-lg">
                     <div className="flex justify-center mb-8">
                         <div className="p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/30">
@@ -55,16 +52,13 @@ function Login() {
                     </p>
                 </div>
 
-                {/* Elementos Decorativos (Círculos) */}
                 <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-blob"></div>
                 <div className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-blob animation-delay-2000"></div>
             </div>
 
-            {/* --- LADO DIREITO: FORMULÁRIO --- */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-white">
                 <div className="w-full max-w-md space-y-8">
 
-                    {/* Cabeçalho Mobile (só aparece em telas pequenas) */}
                     <div className="lg:hidden text-center mb-8">
                         <div className="inline-flex p-3 bg-blue-600 rounded-xl shadow-md mb-4">
                             <LayoutDashboard className="text-white h-8 w-8" />
@@ -78,7 +72,6 @@ function Login() {
                     </div>
 
                     <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-                        {/* Input Login */}
                         <div>
                             <label className="text-sm font-bold text-gray-700 block mb-2">Usuário ou Matrícula</label>
                             <div className="relative group">
@@ -96,7 +89,6 @@ function Login() {
                             </div>
                         </div>
 
-                        {/* Input Senha */}
                         <div>
                             <label className="text-sm font-bold text-gray-700 block mb-2">Senha</label>
                             <div className="relative group">
@@ -121,7 +113,6 @@ function Login() {
                             </div>
                         </div>
 
-                        {/* Esqueceu a Senha */}
                         <div className="flex items-center justify-end">
                             <div className="text-sm">
                                 <a href="#" className="font-bold text-blue-600 hover:text-blue-800 transition">
@@ -130,7 +121,6 @@ function Login() {
                             </div>
                         </div>
 
-                        {/* Mensagem de Erro */}
                         {erro && (
                             <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-r-lg animate-shake">
                                 <p className="font-bold flex items-center gap-2">
@@ -141,7 +131,6 @@ function Login() {
                             </div>
                         )}
 
-                        {/* Botão Entrar */}
                         <button
                             type="submit"
                             disabled={loading}

@@ -34,7 +34,6 @@ function MeusDocumentos() {
                 if (isStaff) {
                     setTodosAlunos(res.data);
                 } else {
-                    // Simulação de filhos
                     const filhos = res.data.filter(a => a.nome.includes("João") || a.nome.includes("Maria"));
                     setMeusFilhos(filhos);
                 }
@@ -44,7 +43,6 @@ function MeusDocumentos() {
         carregar();
     }, [user, isStaff]);
 
-    // Busca Autocomplete
     useEffect(() => {
         if (isStaff && busca.length > 0 && !alunoSelecionado) {
             const termo = busca.toLowerCase();
@@ -68,7 +66,6 @@ function MeusDocumentos() {
         setMostrarPreview(true);
     };
 
-    // IMPRESSÃO
     const handlePrint = () => {
         window.print();
     };
@@ -84,7 +81,6 @@ function MeusDocumentos() {
 
             <div className="flex-1 md:ml-64 p-8 overflow-y-auto h-full">
 
-                {/* CSS DE IMPRESSÃO */}
                 <style>{`
             @media print {
                 .no-print, nav, aside, header, .sidebar { display: none !important; }
@@ -93,7 +89,7 @@ function MeusDocumentos() {
                 #area-documento { box-shadow: none !important; border: none !important; transform: scale(1) !important; margin: 0 auto !important; }
                 @page { size: A4 portrait; margin: 1cm; }
             }
-         `}</style>
+            `}</style>
 
                 <header className="mb-8 no-print">
                     <h1 className="text-3xl font-black text-gray-800 flex items-center gap-3">
@@ -103,10 +99,9 @@ function MeusDocumentos() {
                 </header>
 
                 {isStaff ? (
-                    // --- VISÃO STAFF ---
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 no-print">
                         <div className="lg:col-span-1 space-y-6">
-                            {/* BUSCA */}
+
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 relative z-20">
                                 <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">1. Selecione o Estudante</label>
                                 <div className="relative">
@@ -126,7 +121,6 @@ function MeusDocumentos() {
                                 </div>
                             </div>
 
-                            {/* FORMULÁRIO */}
                             <div className={`bg-white p-6 rounded-xl shadow-sm border border-gray-200 transition-all duration-300 ${!alunoSelecionado ? 'opacity-60 pointer-events-none' : ''}`}>
                                 <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">2. Tipo de Documento</label>
                                 <select value={tipoDocumento} onChange={(e) => setTipoDocumento(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-white mb-4">
@@ -148,7 +142,7 @@ function MeusDocumentos() {
                             </div>
                         </div>
 
-                        {/* PREVIEW STAFF */}
+
                         <div className="lg:col-span-2">
                             {mostrarPreview && alunoSelecionado ? (
                                 <div className="bg-gray-200 rounded-xl border border-gray-300 h-full flex flex-col">
@@ -173,7 +167,7 @@ function MeusDocumentos() {
                         </div>
                     </div>
                 ) : (
-                    // --- VISÃO PAIS (LISTA + IMPRESSÃO DIRETA) ---
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 no-print">
                         {meusFilhos.map(aluno => (
                             <div key={aluno.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition">
@@ -185,7 +179,7 @@ function MeusDocumentos() {
                                     onClick={() => {
                                         setAlunoSelecionado(aluno);
                                         setTipoDocumento('matricula');
-                                        setTimeout(() => window.print(), 300); // Delay para renderizar o documento oculto antes de imprimir
+                                        setTimeout(() => window.print(), 300);
                                     }}
                                     className="w-full flex items-center justify-between p-3 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition border border-orange-100 group"
                                 >
@@ -197,8 +191,6 @@ function MeusDocumentos() {
                     </div>
                 )}
 
-                {/* --- ÁREA OCULTA PARA IMPRESSÃO (PAIS) --- */}
-                {/* Esta div só aparece na impressão. Serve para quando o Pai clica no botão. */}
                 <div className="hidden print:block">
                     <div id="area-documento-container-hidden">
                         {alunoSelecionado && <DeclaracaoMatricula aluno={alunoSelecionado} tipo={tipoDocumento} />}

@@ -16,7 +16,6 @@ function Desempenho() {
     const [valor, setValor] = useState('');
     const [bimestre, setBimestre] = useState('1');
 
-    // Estados para IA e Relatório
     const [relatorioIA, setRelatorioIA] = useState('');
     const [loadingRelatorio, setLoadingRelatorio] = useState(false);
 
@@ -48,7 +47,6 @@ function Desempenho() {
             });
             addToast("Nota lançada com sucesso!", "success");
 
-            // Recarrega notas
             const rn = await api.get('/notas');
             setNotas(rn.data || []);
             setValor('');
@@ -79,7 +77,6 @@ function Desempenho() {
         window.print();
     };
 
-    // Dados para o gráfico e boletim
     const objAlunoSelecionado = alunos.find(a => a.id == alunoId);
     const turmaDoAluno = objAlunoSelecionado ? objAlunoSelecionado.turma : null;
 
@@ -101,20 +98,19 @@ function Desempenho() {
         <div className="flex h-screen bg-gray-50 font-sans">
             <Sidebar />
 
-            {/* CSS DE IMPRESSÃO */}
             <style>{`
         @media print {
-          .no-print { display: none !important; }
-          #area-do-boletim { 
-            display: block !important; 
-            position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important;
-            transform: scale(0.90); transform-origin: top left;
-          }
-          body > * > *:not(#area-do-boletim) { display: none !important; }
-          body, html { visibility: visible !important; background: white; }
-          @page { margin: 0; size: auto; }
-        }
-      `}</style>
+            .no-print { display: none !important; }
+            #area-do-boletim { 
+                display: block !important; 
+                position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important;
+                transform: scale(0.90); transform-origin: top left;
+            }
+            body > * > *:not(#area-do-boletim) { display: none !important; }
+            body, html { visibility: visible !important; background: white; }
+            @page { margin: 0; size: auto; }
+            }
+        `}</style>
 
             <div className="flex-1 md:ml-64 p-8 overflow-y-auto h-screen no-print">
                 <header className="mb-8 flex items-center justify-between">
@@ -127,7 +123,6 @@ function Desempenho() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* FORMULÁRIO */}
                     <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 h-fit">
                         <form onSubmit={handleLancarNota} className="space-y-5">
                             <div>
@@ -159,7 +154,6 @@ function Desempenho() {
                         </form>
                     </div>
 
-                    {/* GRÁFICO E IA */}
                     <div className="lg:col-span-2 space-y-6">
                         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 min-h-[350px]">
                             <div className="flex justify-between items-center mb-6">
@@ -186,7 +180,6 @@ function Desempenho() {
                             </div>
                         </div>
 
-                        {/* CARD DA IA */}
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-purple-100">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center gap-2 text-purple-700 font-bold"><Sparkles size={18}/> Parecer Pedagógico Inteligente</div>
@@ -211,7 +204,6 @@ function Desempenho() {
                 </div>
             </div>
 
-            {/* Componente Oculto para Impressão */}
             <div id="area-do-boletim" style={{ display: 'none' }}>
                 <Boletim aluno={objAlunoSelecionado} notas={notas} relatorioIA={relatorioIA} />
             </div>

@@ -50,7 +50,6 @@ function VisualizarFrequencia() {
 
             <div className="flex-1 md:ml-64 p-8 overflow-y-auto h-full">
 
-                {/* HEADER */}
                 <header className="mb-8 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <div className="p-3 bg-green-100 text-green-700 rounded-xl shadow-sm">
@@ -70,7 +69,6 @@ function VisualizarFrequencia() {
 
                 <div className="max-w-4xl mx-auto">
 
-                    {/* CARD ALUNO */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8 flex items-center gap-4">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 border-2 border-white shadow-sm">
                             <User size={32} />
@@ -84,7 +82,6 @@ function VisualizarFrequencia() {
                         </div>
                     </div>
 
-                    {/* CONTROLES E CALENDÁRIO */}
                     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
 
                         <div className="flex flex-wrap gap-4 mb-8 pb-6 border-b border-gray-100">
@@ -100,9 +97,7 @@ function VisualizarFrequencia() {
                             </div>
                         </div>
 
-                        {/* GRID DIAS */}
                         <div className="grid grid-cols-7 gap-3 sm:gap-4">
-                            {/* Dias da semana (cabeçalho visual) */}
                             {['D','S','T','Q','Q','S','S'].map((d,i) => (
                                 <div key={i} className="text-center text-xs font-bold text-gray-300 mb-2">{d}</div>
                             ))}

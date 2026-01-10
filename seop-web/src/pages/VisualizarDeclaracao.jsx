@@ -38,27 +38,26 @@ function VisualizarDeclaracao() {
 
             <style>{`
         @media print {
-          .no-print { display: none !important; }
-          
-          body, #root, .min-h-screen {
-            background-color: white !important;
-            height: auto !important;
-          }
+            .no-print { display: none !important; }
+            
+            body, #root, .min-h-screen {
+                background-color: white !important;
+                height: auto !important;
+            }
 
-          #area-declaracao { 
+            #area-declaracao { 
             box-shadow: none !important;
             margin: 0 !important;
             width: 100% !important;
             transform: scale(0.95);
             transform-origin: top center;
-          }
-          
-          .overflow-auto { overflow: visible !important; }
-          @page { margin: 0.5cm; size: A4; }
-        }
-      `}</style>
+            }
+            
+            .overflow-auto { overflow: visible !important; }
+            @page { margin: 0.5cm; size: A4; }
+            }
+        `}</style>
 
-            {/* TOOLBAR */}
             <div className="no-print bg-gray-900 text-white shadow-lg p-4 flex flex-col md:flex-row justify-between items-center gap-4 sticky top-0 z-50">
                 <div className="flex items-center gap-3">
                     <div className="bg-amber-500 p-2 rounded-lg shadow-lg text-gray-900">

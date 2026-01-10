@@ -10,7 +10,6 @@ function Matricula() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
 
-    // Estado único para o formulário completo
     const [form, setForm] = useState({
         nome: '',
         dataNascimento: '',
@@ -26,8 +25,8 @@ function Matricula() {
         escola: 'EEEM MAJOR GUAPINDAIA',
         serie: '',
         turma: '',
-        dataMatricula: new Date().toISOString().split('T')[0], // Hoje
-        matricula: Math.floor(100000 + Math.random() * 900000).toString() // Gera automático
+        dataMatricula: new Date().toISOString().split('T')[0],
+        matricula: Math.floor(100000 + Math.random() * 900000).toString() 
     });
 
     const handleChange = (e) => {
@@ -51,7 +50,6 @@ function Matricula() {
 
         setLoading(true);
         try {
-            // Envia todos os campos novos para o Backend
             await api.post('/alunos', { ...form, situacao: "ATIVO" });
             addToast("Aluno matriculado com sucesso!", "success");
             navigate('/');
@@ -70,7 +68,6 @@ function Matricula() {
 
                 <div className="max-w-5xl mx-auto w-full pb-10">
 
-                    {/* Header */}
                     <div className="mb-8 flex justify-between items-center">
                         <div className="flex items-center gap-4">
                             <div className="bg-blue-50 p-3 rounded-xl text-blue-600">
@@ -90,7 +87,6 @@ function Matricula() {
 
                     <form onSubmit={handleSalvar} className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 space-y-8">
 
-                        {/* SEÇÃO 1: DADOS DO ALUNO */}
                         <section>
                             <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4 uppercase tracking-wide text-blue-600">Dados do Aluno</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -117,7 +113,6 @@ function Matricula() {
                             </div>
                         </section>
 
-                        {/* SEÇÃO 2: RESPONSÁVEL */}
                         <section>
                             <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4 uppercase tracking-wide text-blue-600">Dados do Responsável</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -140,7 +135,6 @@ function Matricula() {
                             </div>
                         </section>
 
-                        {/* SEÇÃO 3: DADOS ESCOLARES */}
                         <section>
                             <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4 uppercase tracking-wide text-blue-600">Dados Escolares</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -180,7 +174,6 @@ function Matricula() {
                             </div>
                         </section>
 
-                        {/* BOTÕES */}
                         <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                             <button
                                 type="button"
